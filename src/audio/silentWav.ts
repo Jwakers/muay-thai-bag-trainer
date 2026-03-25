@@ -61,6 +61,7 @@ export async function playSilenceChain(
         const done = () => resolve();
         audio.addEventListener("ended", done, { once: true });
         audio.addEventListener("error", done, { once: true });
+        audio.addEventListener("pause", done, { once: true });
         void audio.play().catch(done);
       });
     } finally {
