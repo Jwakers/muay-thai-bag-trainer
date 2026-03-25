@@ -13,7 +13,7 @@ export function InputField({ label, error, className = '', ...props }: InputFiel
         <label className="font-label text-[0.75rem] text-brand-outline mb-2 uppercase tracking-wide">{label}</label>
       ) : null}
       <input
-        className={`bg-transparent outline-none border-b-2 py-3 font-body text-[1rem] text-brand-on-surface transition-all
+        className={`bg-transparent outline-none border-b-2 py-3 font-body text-[1rem] tabular-nums text-brand-on-surface transition-all
           ${
             error
               ? 'border-brand-error bg-brand-surface-container-lowest text-brand-error px-3'
