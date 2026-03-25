@@ -21,6 +21,10 @@ interface LocalSettingsForm {
   restDuration: string;
   totalRounds: string;
   tenSecondWarning: boolean;
+  calloutsEnabled: boolean;
+  calloutsVolumePercent: number;
+  calloutComboRepetitions: string;
+  calloutRepeatPauseSeconds: string;
 }
 
 export interface SettingsScreenProps {
@@ -39,10 +43,18 @@ export function SettingsScreen({
     restDuration: formatTime(settings.restDuration),
     totalRounds: settings.totalRounds.toString(),
     tenSecondWarning: settings.tenSecondWarning,
+    calloutsEnabled: settings.calloutsEnabled,
+    calloutsVolumePercent: Math.round(settings.calloutsVolume * 100),
+    calloutComboRepetitions: settings.calloutComboRepetitions.toString(),
+    calloutRepeatPauseSeconds: settings.calloutRepeatPauseSeconds.toString(),
   });
+
+  const voiceControlsDisabled = !localSettings.calloutsEnabled;
 
   const handleCommit = () => {
     const totalRounds = parseInt(localSettings.totalRounds, 10);
+    const comboReps = parseInt(localSettings.calloutComboRepetitions, 10);
+    const repeatPause = parseInt(localSettings.calloutRepeatPauseSeconds, 10);
     onSaveSettings({
       ...settings,
       roundDuration: parseTime(localSettings.roundDuration),
@@ -51,6 +63,16 @@ export function SettingsScreen({
         ? totalRounds
         : settings.totalRounds,
       tenSecondWarning: localSettings.tenSecondWarning,
+      calloutsEnabled: localSettings.calloutsEnabled,
+      calloutsVolume: Math.min(1, Math.max(0, localSettings.calloutsVolumePercent / 100)),
+      calloutComboRepetitions:
+        Number.isFinite(comboReps) && comboReps >= 1 && comboReps <= 8
+          ? comboReps
+          : settings.calloutComboRepetitions,
+      calloutRepeatPauseSeconds:
+        Number.isFinite(repeatPause) && repeatPause >= 1 && repeatPause <= 120
+          ? repeatPause
+          : settings.calloutRepeatPauseSeconds,
     });
     onNavigate("home");
   };
@@ -120,6 +142,79 @@ export function SettingsScreen({
               className="w-5 h-5 accent-brand-secondary cursor-pointer"
             />
           </label>
+        </div>
+
+        <div className="bg-brand-surface-container-low p-[1.4rem] mb-8 border-l-[8px] border-l-brand-tertiary">
+          <h3 className="font-display text-[1.2rem] md:text-[1.5rem] uppercase mb-[1.4rem] text-brand-tertiary tracking-tight">
+            Callouts
+          </h3>
+          <label className="flex items-center justify-between py-2 cursor-pointer mb-4">
+            <span className="font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface">
+              Voice callouts
+            </span>
+            <input
+              type="checkbox"
+              checked={localSettings.calloutsEnabled}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  calloutsEnabled: e.target.checked,
+                })
+              }
+              className="w-5 h-5 accent-brand-tertiary cursor-pointer"
+            />
+          </label>
+          <div className={voiceControlsDisabled ? "opacity-40" : ""}>
+            <label
+              htmlFor="callouts-volume"
+              className={`font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface block mb-2 ${
+                voiceControlsDisabled ? "cursor-not-allowed" : ""
+              }`}
+            >
+              Callout volume ({localSettings.calloutsVolumePercent}%)
+            </label>
+            <input
+              id="callouts-volume"
+              type="range"
+              min={0}
+              max={100}
+              value={localSettings.calloutsVolumePercent}
+              disabled={voiceControlsDisabled}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  calloutsVolumePercent: Number(e.target.value),
+                })
+              }
+              className={`w-full accent-brand-tertiary ${voiceControlsDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+            />
+            <InputField
+              id="callout-combo-repetitions"
+              disabled={voiceControlsDisabled}
+              label="Combo repetition (times per round, 1–8)"
+              value={localSettings.calloutComboRepetitions}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  calloutComboRepetitions: e.target.value,
+                })
+              }
+              inputMode="numeric"
+            />
+            <InputField
+              id="callout-repeat-pause"
+              disabled={voiceControlsDisabled}
+              label="Pause between repetitions (seconds, 1–120)"
+              value={localSettings.calloutRepeatPauseSeconds}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  calloutRepeatPauseSeconds: e.target.value,
+                })
+              }
+              inputMode="numeric"
+            />
+          </div>
         </div>
       </div>
 

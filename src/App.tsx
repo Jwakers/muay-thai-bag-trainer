@@ -16,6 +16,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   totalRounds: 5,
   tenSecondWarning: true,
   difficulty: 'beginner',
+  calloutsEnabled: true,
+  calloutsVolume: 1,
+  calloutComboRepetitions: 3,
+  calloutRepeatPauseSeconds: 5,
 };
 
 function isDifficulty(value: unknown): value is Difficulty {
@@ -36,6 +40,26 @@ function loadSettings(): AppSettings {
       tenSecondWarning:
         typeof o.tenSecondWarning === 'boolean' ? o.tenSecondWarning : DEFAULT_SETTINGS.tenSecondWarning,
       difficulty: isDifficulty(o.difficulty) ? o.difficulty : DEFAULT_SETTINGS.difficulty,
+      calloutsEnabled:
+        typeof o.calloutsEnabled === 'boolean' ? o.calloutsEnabled : DEFAULT_SETTINGS.calloutsEnabled,
+      calloutsVolume:
+        typeof o.calloutsVolume === 'number' &&
+        o.calloutsVolume >= 0 &&
+        o.calloutsVolume <= 1
+          ? o.calloutsVolume
+          : DEFAULT_SETTINGS.calloutsVolume,
+      calloutComboRepetitions:
+        typeof o.calloutComboRepetitions === 'number' &&
+        o.calloutComboRepetitions >= 1 &&
+        o.calloutComboRepetitions <= 8
+          ? Math.floor(o.calloutComboRepetitions)
+          : DEFAULT_SETTINGS.calloutComboRepetitions,
+      calloutRepeatPauseSeconds:
+        typeof o.calloutRepeatPauseSeconds === 'number' &&
+        o.calloutRepeatPauseSeconds >= 1 &&
+        o.calloutRepeatPauseSeconds <= 120
+          ? Math.floor(o.calloutRepeatPauseSeconds)
+          : DEFAULT_SETTINGS.calloutRepeatPauseSeconds,
     };
   } catch (e) {
     console.warn(e);

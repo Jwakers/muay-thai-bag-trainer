@@ -1,4 +1,5 @@
 import { Button } from "../components/Button";
+import { resumeSharedAudioContext } from "../audio/sharedAudioContext";
 import type { AppSettings, ScreenId } from "../types";
 
 export interface WorkoutCompleteScreenProps {
@@ -55,7 +56,10 @@ export function WorkoutCompleteScreen({
         <Button
           variant="secondary"
           className="!text-brand-primary !border-brand-primary/30 hover:!bg-brand-primary/10 hover:!border-brand-primary/80 hover:shadow-[0_0_15px_rgba(255,143,115,0.15)] transform hover:-translate-y-0.5 transition-all duration-300"
-          onClick={onAddRound}
+          onClick={() => {
+            void resumeSharedAudioContext();
+            onAddRound();
+          }}
         >
           Add 1 More Round
         </Button>

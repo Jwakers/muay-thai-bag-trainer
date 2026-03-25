@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { PulseTimer } from "../components/PulseTimer";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { getRandomCombos } from "../data/workoutData";
+import { useComboCallouts } from "../hooks/useComboCallouts";
 import { useScreenWakeLock } from "../hooks/useScreenWakeLock";
 import { useTimer } from "../hooks/useTimer";
 import type { AppSettings, ScreenId } from "../types";
@@ -29,7 +30,16 @@ export function ActiveTrainingScreen({
   const [currentCombos] = useState(() =>
     getRandomCombos(1, settings.difficulty),
   );
+  const activeCombo = currentCombos[0];
   const timeLeft = useTimer(settings.roundDuration);
+
+  useComboCallouts(
+    activeCombo?.calloutIds,
+    settings.calloutsEnabled,
+    settings.calloutsVolume,
+    settings.calloutComboRepetitions,
+    settings.calloutRepeatPauseSeconds,
+  );
 
   const handleRoundComplete = useCallback(() => {
     if (currentRound < settings.totalRounds) {
@@ -67,7 +77,6 @@ export function ActiveTrainingScreen({
           />
         </button>
       </div>
-      ç
       <div className="flex-1 flex flex-col">
         <PulseTimer time={formatTime(timeLeft)} pulsing warning={isWarning} />
 
@@ -75,6 +84,16 @@ export function ActiveTrainingScreen({
           {currentCombos.map((combo, i) => (
             <WorkoutCard key={i} {...combo} />
           ))}
+          {settings.calloutsEnabled &&
+          !(activeCombo?.calloutIds?.length) ? (
+            <p
+              role="status"
+              className="font-body text-brand-outline text-center text-[0.95rem] mt-4 max-w-sm mx-auto"
+            >
+              Voice callouts are not set up for this intensity yet. Use beginner
+              for spoken combos, or turn off voice callouts in settings.
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="mt-auto pt-[2.75rem]">
