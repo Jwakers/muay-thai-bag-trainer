@@ -1,9 +1,19 @@
+import { createRequire } from 'node:module';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const require = createRequire(import.meta.url);
+/** Rolldown/Vite 8 can fail to resolve this bare import from virtual:pwa-register unless hoisted + aliased. */
+const workboxWindowEntry = require.resolve('workbox-window/build/workbox-window.prod.es5.mjs');
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      'workbox-window': workboxWindowEntry,
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
