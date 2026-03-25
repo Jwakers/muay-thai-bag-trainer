@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { CALLOUT_LABELS, type CalloutId } from "../data/callouts";
+import { playSilenceChain } from "../audio/silentWav";
+import { CALLOUT_LABELS, isCalloutId, type CalloutId } from "../data/callouts";
 
 const CLIP_GAP_MS = 80;
 
@@ -20,10 +21,6 @@ function speakCallout(text: string, utteranceVolume = 1): Promise<void> {
     u.onerror = () => resolve();
     speechSynthesis.speak(u);
   });
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 function clampRepetitions(n: number): number {
@@ -51,18 +48,25 @@ export function useComboCallouts(
 
   const reps = clampRepetitions(comboRepetitions);
   const pauseMs = clampPauseSeconds(repeatPauseSeconds) * 1000;
+  const calloutIdsKey = calloutIds?.join("|") ?? "";
 
   useEffect(() => {
-    if (!enabled || volume <= 0 || !calloutIds?.length) return;
+    if (!enabled || volume <= 0 || !calloutIdsKey) return;
+    const ids = calloutIdsKey.split("|").filter(isCalloutId);
+    if (!ids.length) return;
 
     let cancelled = false;
     currentAudioRef.current = null;
+    const isCancelled = () => cancelled;
+    const setCurrentAudio = (a: HTMLAudioElement | null) => {
+      currentAudioRef.current = a;
+    };
 
     const run = async () => {
       const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 
       const playComboOnce = async () => {
-        for (const id of calloutIds) {
+        for (const id of ids) {
           if (cancelled) break;
           const url = `${base}audio/${id}.wav`;
 
@@ -85,7 +89,7 @@ export function useComboCallouts(
           if (result === "fail") {
             await speakCallout(CALLOUT_LABELS[id], volume);
           } else {
-            await delay(CLIP_GAP_MS);
+            await playSilenceChain(CLIP_GAP_MS, setCurrentAudio, isCancelled);
           }
         }
       };
@@ -95,7 +99,9 @@ export function useComboCallouts(
         await playComboOnce();
         if (cancelled) break;
         if (pass < reps - 1) {
-          await delay(pauseMs);
+          // Wall-clock delay breaks Chrome autoplay after ~few seconds; chain
+          // silent WAV clips so each play() follows the previous media `ended`.
+          await playSilenceChain(pauseMs, setCurrentAudio, isCancelled);
         }
       }
     };
@@ -114,5 +120,5 @@ export function useComboCallouts(
         speechSynthesis.cancel();
       }
     };
-  }, [calloutIds, enabled, volume, reps, pauseMs]);
+  }, [calloutIdsKey, enabled, volume, reps, pauseMs]);
 }
