@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-background: #0e0e0e;
+  --color-brand-surface: #0e0e0e;
+  --color-brand-surface-container: #1a1a1a;
+  --color-brand-surface-container-low: #131313;
+  --color-brand-surface-container-highest: #262626;
+  --color-brand-surface-bright: #2c2c2c;
+  --color-brand-surface-variant: #262626;
+  --color-brand-surface-container-lowest: #000000;
+  
+  --color-brand-primary: #ff8f73;
+  --color-brand-primary-dim: #dc3300;
+  --color-brand-primary-fixed-dim: #ff5c34;
+  --color-brand-on-primary: #5e1000;
+  
+  --color-brand-secondary: #fc7c7f;
+  
+  --color-brand-tertiary: #e9aaff;
+  
+  --color-brand-outline: #767575;
+  --color-brand-outline-variant: #484847;
+  
+  --color-brand-error: #ff6e84;
+  --color-brand-on-surface: #ffffff;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Manrope", sans-serif;
+
+  --spacing-micro: 0.5rem;
+  --spacing-standard: 1.4rem;
+  --spacing-power: 2.75rem;
+  --spacing-macro: 5.5rem;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-background);
+    color: var(--color-brand-on-surface);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    /* High-Octane Brutalism */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
