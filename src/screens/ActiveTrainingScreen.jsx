@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { SkipForward } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { PulseTimer } from '../components/PulseTimer';
 import { WorkoutCard } from '../components/WorkoutCard';
 import { getRandomCombos } from '../data/workoutData';
+import { useScreenWakeLock } from '../hooks/useScreenWakeLock';
 import { useTimer } from '../hooks/useTimer';
 
 export function ActiveTrainingScreen({ onNavigate, settings, currentRound }) {
+  useScreenWakeLock();
   const [currentCombos] = useState(() => getRandomCombos(1, settings?.difficulty ?? 'beginner'));
   const timeLeft = useTimer(settings?.roundDuration ?? 60); // Default to 1 min
   
@@ -34,14 +37,15 @@ export function ActiveTrainingScreen({ onNavigate, settings, currentRound }) {
   const isFinalRound = (currentRound ?? 1) >= (settings?.totalRounds ?? 5);
 
   return (
-    <div className="flex flex-col min-h-screen p-[2rem] bg-brand-background">
-      <div className="flex justify-between items-center mb-[2rem]">
-        <h2 className="font-display text-brand-primary text-[2rem] leading-none uppercase">{isFinalRound ? 'Final Round' : `Round ${currentRound ?? 1}`}</h2>
+    <div className="flex flex-col min-h-screen p-8 bg-brand-background">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="font-display text-brand-primary text-8 leading-none uppercase">{isFinalRound ? 'Final Round' : `Round ${currentRound ?? 1}`}</h2>
         <button 
           onClick={handleRoundComplete}
           className="font-label text-brand-outline hover:text-brand-primary font-bold uppercase tracking-widest text-[0.75rem] transition-colors cursor-pointer flex items-center gap-2"
         >
-          Skip Round <span className="text-[1.2rem] leading-none">⏭</span>
+          Skip Round{' '}
+          <SkipForward className="size-[1.2rem] shrink-0" aria-hidden strokeWidth={2.5} />
         </button>
       </div>
       
