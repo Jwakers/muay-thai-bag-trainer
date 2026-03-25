@@ -3,13 +3,18 @@ import { CALLOUT_LABELS, type CalloutId } from "../data/callouts";
 
 const CLIP_GAP_MS = 80;
 
-function speakCallout(text: string): Promise<void> {
+function speakCallout(text: string, utteranceVolume = 1): Promise<void> {
+  const v = Math.min(
+    1,
+    Math.max(0, Number.isFinite(utteranceVolume) ? utteranceVolume : 1),
+  );
   return new Promise((resolve) => {
     if (typeof speechSynthesis === "undefined") {
       queueMicrotask(resolve);
       return;
     }
     const u = new SpeechSynthesisUtterance(text);
+    u.volume = v;
     u.rate = 1.12;
     u.onend = () => resolve();
     u.onerror = () => resolve();
@@ -78,7 +83,7 @@ export function useComboCallouts(
           if (cancelled) break;
 
           if (result === "fail") {
-            await speakCallout(CALLOUT_LABELS[id]);
+            await speakCallout(CALLOUT_LABELS[id], volume);
           } else {
             await delay(CLIP_GAP_MS);
           }

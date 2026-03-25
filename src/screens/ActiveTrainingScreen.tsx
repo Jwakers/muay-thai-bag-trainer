@@ -83,6 +83,16 @@ export function ActiveTrainingScreen({
           {currentCombos.map((combo, i) => (
             <WorkoutCard key={i} {...combo} />
           ))}
+          {settings.calloutsEnabled &&
+          !(currentCombos[0]?.calloutIds?.length) ? (
+            <p
+              role="status"
+              className="font-body text-brand-outline text-center text-[0.95rem] mt-4 max-w-sm mx-auto"
+            >
+              Voice callouts are not set up for this intensity yet. Use beginner
+              for spoken combos, or turn off voice callouts in settings.
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="mt-auto pt-[2.75rem]">

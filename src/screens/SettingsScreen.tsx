@@ -49,6 +49,8 @@ export function SettingsScreen({
     calloutRepeatPauseSeconds: settings.calloutRepeatPauseSeconds.toString(),
   });
 
+  const voiceControlsDisabled = !localSettings.calloutsEnabled;
+
   const handleCommit = () => {
     const totalRounds = parseInt(localSettings.totalRounds, 10);
     const comboReps = parseInt(localSettings.calloutComboRepetitions, 10);
@@ -162,10 +164,12 @@ export function SettingsScreen({
               className="w-5 h-5 accent-brand-tertiary cursor-pointer"
             />
           </label>
-          <div className={localSettings.calloutsEnabled ? "" : "opacity-40 pointer-events-none"}>
+          <div className={voiceControlsDisabled ? "opacity-40" : ""}>
             <label
               htmlFor="callouts-volume"
-              className="font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface block mb-2"
+              className={`font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface block mb-2 ${
+                voiceControlsDisabled ? "cursor-not-allowed" : ""
+              }`}
             >
               Callout volume ({localSettings.calloutsVolumePercent}%)
             </label>
@@ -175,15 +179,18 @@ export function SettingsScreen({
               min={0}
               max={100}
               value={localSettings.calloutsVolumePercent}
+              disabled={voiceControlsDisabled}
               onChange={(e) =>
                 setLocalSettings({
                   ...localSettings,
                   calloutsVolumePercent: Number(e.target.value),
                 })
               }
-              className="w-full accent-brand-tertiary cursor-pointer"
+              className={`w-full accent-brand-tertiary ${voiceControlsDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
             <InputField
+              id="callout-combo-repetitions"
+              disabled={voiceControlsDisabled}
               label="Combo repetition (times per round, 1–8)"
               value={localSettings.calloutComboRepetitions}
               onChange={(e) =>
@@ -195,6 +202,8 @@ export function SettingsScreen({
               inputMode="numeric"
             />
             <InputField
+              id="callout-repeat-pause"
+              disabled={voiceControlsDisabled}
               label="Pause between repetitions (seconds, 1–120)"
               value={localSettings.calloutRepeatPauseSeconds}
               onChange={(e) =>
