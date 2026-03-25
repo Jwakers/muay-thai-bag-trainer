@@ -30,10 +30,11 @@ export function ActiveTrainingScreen({
   const [currentCombos] = useState(() =>
     getRandomCombos(1, settings.difficulty),
   );
+  const activeCombo = currentCombos[0];
   const timeLeft = useTimer(settings.roundDuration);
 
   useComboCallouts(
-    currentCombos[0]?.calloutIds,
+    activeCombo?.calloutIds,
     settings.calloutsEnabled,
     settings.calloutsVolume,
     settings.calloutComboRepetitions,
@@ -84,7 +85,7 @@ export function ActiveTrainingScreen({
             <WorkoutCard key={i} {...combo} />
           ))}
           {settings.calloutsEnabled &&
-          !(currentCombos[0]?.calloutIds?.length) ? (
+          !(activeCombo?.calloutIds?.length) ? (
             <p
               role="status"
               className="font-body text-brand-outline text-center text-[0.95rem] mt-4 max-w-sm mx-auto"

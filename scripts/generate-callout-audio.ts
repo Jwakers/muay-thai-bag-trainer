@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env -S npx tsx
 /**
  * Builds `public/audio/{id}.wav` from macOS `say` + `afconvert`.
  * Phrases are derived from `src/data/callouts.ts` (CALLOUT_IDS + CALLOUT_LABELS).
