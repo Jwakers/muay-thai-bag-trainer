@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "../components/Button";
+import { resumeSharedAudioContext } from "../audio/sharedAudioContext";
 import type { Difficulty, ScreenId } from "../types";
 
 export interface DifficultyScreenProps {
@@ -25,7 +26,10 @@ export function DifficultyScreen({
       <div className="flex flex-col flex-1 gap-4 justify-center">
         <button
           type="button"
-          onClick={() => onSelectDifficulty("beginner")}
+          onClick={() => {
+            void resumeSharedAudioContext();
+            onSelectDifficulty("beginner");
+          }}
           className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-[#a8e6cf] p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
@@ -45,7 +49,10 @@ export function DifficultyScreen({
 
         <button
           type="button"
-          onClick={() => onSelectDifficulty("intermediate")}
+          onClick={() => {
+            void resumeSharedAudioContext();
+            onSelectDifficulty("intermediate");
+          }}
           className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-primary p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
@@ -65,7 +72,10 @@ export function DifficultyScreen({
 
         <button
           type="button"
-          onClick={() => onSelectDifficulty("advanced")}
+          onClick={() => {
+            void resumeSharedAudioContext();
+            onSelectDifficulty("advanced");
+          }}
           className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-error p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
@@ -85,7 +95,10 @@ export function DifficultyScreen({
 
         <button
           type="button"
-          onClick={() => onSelectDifficulty("mixed")}
+          onClick={() => {
+            void resumeSharedAudioContext();
+            onSelectDifficulty("mixed");
+          }}
           className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-tertiary p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">

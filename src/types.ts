@@ -1,12 +1,14 @@
-export type ScreenId =
-  | 'home'
-  | 'difficulty'
-  | 'active'
-  | 'rest'
-  | 'settings'
-  | 'complete';
+import type { CalloutId } from "./data/callouts";
 
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'mixed';
+export type ScreenId =
+  | "home"
+  | "difficulty"
+  | "active"
+  | "rest"
+  | "settings"
+  | "complete";
+
+export type Difficulty = "beginner" | "intermediate" | "advanced" | "mixed";
 
 export interface AppSettings {
   roundDuration: number;
@@ -14,6 +16,14 @@ export interface AppSettings {
   totalRounds: number;
   tenSecondWarning: boolean;
   difficulty: Difficulty;
+  /** Voice callouts during active rounds (beginner combos with calloutIds). */
+  calloutsEnabled: boolean;
+  /** Linear gain 0–1 applied to decoded callout buffers. */
+  calloutsVolume: number;
+  /** How many times to read the full combo per round (each pass = full move sequence). */
+  calloutComboRepetitions: number;
+  /** Seconds of silence after each full combo before the next repeat (not after the last). */
+  calloutRepeatPauseSeconds: number;
 }
 
 export interface WorkoutCombo {
@@ -21,4 +31,6 @@ export interface WorkoutCombo {
   subtitle: string;
   active?: boolean;
   setsReps?: string;
+  /** Ordered move ids for audio; omit when no bundled clips exist yet. */
+  calloutIds?: readonly CalloutId[];
 }

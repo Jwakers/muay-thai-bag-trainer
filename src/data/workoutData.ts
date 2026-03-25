@@ -4,16 +4,66 @@ type ComboPoolKey = Exclude<Difficulty, 'mixed'>;
 
 export const WORKOUT_COMBOS: Record<ComboPoolKey, WorkoutCombo[]> = {
   beginner: [
-    { title: 'Jab, Cross, Lead Hook, Rear Low Kick', subtitle: 'Basic continuous sequence', active: true },
-    { title: 'Double Jab, Cross, Switch Kick', subtitle: 'Forward pressure sequence', active: true },
-    { title: 'Jab, Cross, Rear Roundhouse', subtitle: 'Basic 1-2 finish with a hard kick', active: true },
-    { title: 'Jab, Cross, Lead Hook', subtitle: 'Classic boxing combination', active: true },
-    { title: 'Lead Teep, Jab, Cross', subtitle: 'Establish distance, then step in', active: true },
-    { title: 'Cross, Lead Hook, Cross', subtitle: 'Simple power sequence', active: true },
-    { title: 'Jab, Rear Body Kick', subtitle: 'Rapid high-low mix-up', active: true },
-    { title: 'Jab, Cross, Rear Knee', subtitle: 'Basic straight clinch entry', active: true },
-    { title: 'Jab, Jab, Cross', subtitle: 'Triple punch rhythm builder', active: true },
-    { title: 'Rear Teep, Switch Kick', subtitle: 'Double kick rhythm sequence', active: true },
+    {
+      title: "Jab, Cross, Lead Hook, Rear Low Kick",
+      subtitle: "Basic continuous sequence",
+      active: true,
+      calloutIds: ["jab", "cross", "leadHook", "rearLowKick"],
+    },
+    {
+      title: "Double Jab, Cross, Switch Kick",
+      subtitle: "Forward pressure sequence",
+      active: true,
+      calloutIds: ["doubleJab", "cross", "switchKick"],
+    },
+    {
+      title: "Jab, Cross, Rear Roundhouse",
+      subtitle: "Basic 1-2 finish with a hard kick",
+      active: true,
+      calloutIds: ["jab", "cross", "rearRoundhouse"],
+    },
+    {
+      title: "Jab, Cross, Lead Hook",
+      subtitle: "Classic boxing combination",
+      active: true,
+      calloutIds: ["jab", "cross", "leadHook"],
+    },
+    {
+      title: "Lead Teep, Jab, Cross",
+      subtitle: "Establish distance, then step in",
+      active: true,
+      calloutIds: ["leadTeep", "jab", "cross"],
+    },
+    {
+      title: "Cross, Lead Hook, Cross",
+      subtitle: "Simple power sequence",
+      active: true,
+      calloutIds: ["cross", "leadHook", "cross"],
+    },
+    {
+      title: "Jab, Rear Body Kick",
+      subtitle: "Rapid high-low mix-up",
+      active: true,
+      calloutIds: ["jab", "rearBodyKick"],
+    },
+    {
+      title: "Jab, Cross, Rear Knee",
+      subtitle: "Basic straight clinch entry",
+      active: true,
+      calloutIds: ["jab", "cross", "rearKnee"],
+    },
+    {
+      title: "Jab, Jab, Cross",
+      subtitle: "Triple punch rhythm builder",
+      active: true,
+      calloutIds: ["jab", "jab", "cross"],
+    },
+    {
+      title: "Rear Teep, Switch Kick",
+      subtitle: "Double kick rhythm sequence",
+      active: true,
+      calloutIds: ["rearTeep", "switchKick"],
+    },
   ],
   intermediate: [
     { title: 'Teep, Jab, Rear Kick', subtitle: 'Maintain distance and punish', active: true },

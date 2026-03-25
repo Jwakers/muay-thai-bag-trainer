@@ -19,7 +19,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png'],
+      includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png', 'audio/*.wav'],
       manifest: {
         name: 'Muay Thai Bag Trainer',
         short_name: 'Bag Trainer',
@@ -45,7 +45,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wav}'],
       },
     }),
   ],
