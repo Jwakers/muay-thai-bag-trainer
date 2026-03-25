@@ -9,17 +9,19 @@ export interface HomeScreenProps {
   pwaInstall: PwaInstallState;
 }
 
-export function HomeScreen({ onNavigate, onStartTraining, pwaInstall }: HomeScreenProps) {
+export function HomeScreen({
+  onNavigate,
+  onStartTraining,
+  pwaInstall,
+}: HomeScreenProps) {
   return (
     <div className="flex flex-col min-h-screen p-8">
       <PwaInstallBanner pwa={pwaInstall} />
       <div className="flex-1 flex flex-col justify-center">
         <h1 className="font-display text-[3.5rem] md:text-[5rem] tracking-tight leading-[1.1] mb-4">
-          MUAY
+          MUAY THAI
           <br />
-          THAI
-          <br />
-          <span className="text-brand-primary drop-shadow-[0_0_10px_rgba(255,143,115,0.4)] text-[2.75rem] md:text-[3.75rem] block mt-1">
+          <span className="text-brand-primary tracking-[0.4px] md:tracking-[1.5px] drop-shadow-[0_0_10px_rgba(255,143,115,0.4)] text-[2.75rem] md:text-[3.75rem] block mt-1">
             BAG TRAINER
           </span>
         </h1>
