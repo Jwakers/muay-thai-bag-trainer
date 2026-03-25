@@ -41,7 +41,7 @@ export function RestScreen({
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center">
-        <div className="font-display text-brand-on-surface text-[6rem] md:text-[8rem] tracking-tighter leading-none text-center drop-shadow-[0_0_15px_rgba(233,170,255,0.2)]">
+        <div className="font-display text-brand-on-surface text-[6rem] md:text-[8rem] tabular-nums tracking-tighter leading-none text-center drop-shadow-[0_0_15px_rgba(233,170,255,0.2)]">
           {formatTime(timeLeft)}
         </div>
         <p className="font-body text-brand-outline text-center mt-6 text-[1.2rem] max-w-xs mx-auto">

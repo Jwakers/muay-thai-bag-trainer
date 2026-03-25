@@ -36,7 +36,7 @@ export function WorkoutCompleteScreen({
             <span className="font-label uppercase tracking-widest text-[0.85rem] text-brand-outline font-bold">
               Rounds
             </span>
-            <span className="font-display text-8 text-brand-on-surface leading-none">
+            <span className="font-display text-8 text-brand-on-surface tabular-nums leading-none">
               {currentRound}
             </span>
           </div>
