@@ -54,6 +54,7 @@ export function SettingsScreen({
   });
 
   const voiceControlsDisabled = !localSettings.calloutsEnabled;
+  const volumeSliderDisabled = !localSettings.calloutsEnabled && localSettings.audibleCountdownLastSeconds === "0";
 
   const handleCommit = () => {
     const totalRounds = parseInt(localSettings.totalRounds, 10);
@@ -68,14 +69,12 @@ export function SettingsScreen({
       totalRounds: Number.isFinite(totalRounds)
         ? totalRounds
         : settings.totalRounds,
-      preWorkoutCountdownSeconds:
-        Number.isFinite(preWorkout) && preWorkout >= 0 && preWorkout <= 120
-          ? preWorkout
-          : settings.preWorkoutCountdownSeconds,
-      audibleCountdownLastSeconds:
-        Number.isFinite(audibleLast) && audibleLast >= 0 && audibleLast <= 10
-          ? audibleLast
-          : settings.audibleCountdownLastSeconds,
+      preWorkoutCountdownSeconds: Number.isFinite(preWorkout)
+        ? Math.max(0, Math.min(120, preWorkout))
+        : settings.preWorkoutCountdownSeconds,
+      audibleCountdownLastSeconds: Number.isFinite(audibleLast)
+        ? Math.max(0, Math.min(10, audibleLast))
+        : settings.audibleCountdownLastSeconds,
       tenSecondWarning: localSettings.tenSecondWarning,
       calloutsEnabled: localSettings.calloutsEnabled,
       calloutsVolume: Math.min(1, Math.max(0, localSettings.calloutsVolumePercent / 100)),
@@ -222,14 +221,17 @@ export function SettingsScreen({
               className="w-5 h-5 accent-brand-tertiary cursor-pointer"
             />
           </label>
-          <div className={voiceControlsDisabled ? "opacity-40" : ""}>
+          <div className={volumeSliderDisabled ? "opacity-40" : ""}>
             <label
               htmlFor="callouts-volume"
               className={`font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface block mb-2 ${
-                voiceControlsDisabled ? "cursor-not-allowed" : ""
+                volumeSliderDisabled ? "cursor-not-allowed" : ""
               }`}
             >
               Callout volume ({localSettings.calloutsVolumePercent}%)
+              <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
+                Also controls countdown audio.
+              </span>
             </label>
             <input
               id="callouts-volume"
@@ -237,14 +239,14 @@ export function SettingsScreen({
               min={0}
               max={100}
               value={localSettings.calloutsVolumePercent}
-              disabled={voiceControlsDisabled}
+              disabled={volumeSliderDisabled}
               onChange={(e) =>
                 setLocalSettings({
                   ...localSettings,
                   calloutsVolumePercent: Number(e.target.value),
                 })
               }
-              className={`w-full accent-brand-tertiary ${voiceControlsDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+              className={`w-full accent-brand-tertiary ${volumeSliderDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
             <InputField
               id="callout-combo-repetitions"
