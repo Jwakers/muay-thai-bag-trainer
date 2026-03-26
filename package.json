@@ -9,10 +9,20 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "cap:sync": "pnpm run build && pnpm exec cap sync",
+    "cap:sync:ios": "pnpm run build && pnpm exec cap sync ios",
+    "cap:sync:android": "pnpm run build && pnpm exec cap sync android",
+    "cap:open:ios": "pnpm exec cap open ios",
+    "cap:open:android": "pnpm exec cap open android",
+    "cap:ios:update": "pnpm run cap:sync:ios && pnpm run cap:open:ios",
+    "cap:run:ios:live": "pnpm exec cap run ios -l --external",
     "generate:callouts": "tsx scripts/generate-callout-audio.ts",
     "generate:countdown": "tsx scripts/generate-countdown-audio.ts"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0",
     "@tailwindcss/vite": "^4.2.2",
     "lucide-react": "^1.6.0",
     "react": "^19.2.4",
@@ -20,6 +30,7 @@
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.0",
     "@eslint/js": "^9.39.4",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",

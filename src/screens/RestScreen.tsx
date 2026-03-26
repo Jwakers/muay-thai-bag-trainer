@@ -39,7 +39,7 @@ export function RestScreen({
   }, [timeLeft, onNavigate, onNextRound]);
 
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background border-t-8 border-t-brand-tertiary">
+    <div className="flex flex-col min-h-full p-8 bg-brand-background border-t-8 border-t-brand-tertiary">
       <div className="flex justify-between items-center mb-8">
         <h2 className="font-display text-brand-tertiary text-4xl md:text-5xl leading-none uppercase">
           Rest

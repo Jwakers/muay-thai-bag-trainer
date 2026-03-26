@@ -98,7 +98,7 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background">
+    <div className="flex flex-col min-h-full p-8 bg-brand-background">
       <div className="mb-power">
         <h2 className="font-display text-brand-on-surface text-4xl md:text-5xl leading-none uppercase mb-standard">
           App Settings
@@ -172,8 +172,7 @@ export function SettingsScreen({
                 <span className="block">Countdown audio (last N seconds)</span>
                 <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
                   Plays before prep ends, rest ends, and each round ends. 0 =
-                  off, max {COUNTDOWN_MAX_SECONDS} (bundled clips). Uses callout
-                  volume.
+                  off, max {COUNTDOWN_MAX_SECONDS}. Uses callout volume.
                 </span>
               </>
             }

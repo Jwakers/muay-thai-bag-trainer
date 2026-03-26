@@ -11,3 +11,5 @@ interface WindowEventMap {
   beforeinstallprompt: BeforeInstallPromptEvent;
   appinstalled: Event;
 }
+
+declare const __BUILD_TIME__: string;
