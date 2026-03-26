@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const DISMISS_KEY = 'pwa-install-banner-dismissed';
 
@@ -25,8 +26,9 @@ export interface PwaInstallState {
 }
 
 export function usePwaInstall(): PwaInstallState {
+  const isNativePlatform = Capacitor.isNativePlatform();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isStandalone, setIsStandalone] = useState(getIsStandalone);
+  const [isStandalone, setIsStandalone] = useState(() => isNativePlatform || getIsStandalone());
   const [bannerDismissed, setBannerDismissed] = useState(() => {
     try {
       return localStorage.getItem(DISMISS_KEY) === '1';
@@ -49,6 +51,10 @@ export function usePwaInstall(): PwaInstallState {
   }, []);
 
   useEffect(() => {
+    if (isNativePlatform) {
+      return;
+    }
+
     const onBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -70,7 +76,7 @@ export function usePwaInstall(): PwaInstallState {
       window.removeEventListener('appinstalled', onAppInstalled);
       mq.removeEventListener('change', onDisplayModeChange);
     };
-  }, []);
+  }, [isNativePlatform]);
 
   return {
     deferredPrompt,

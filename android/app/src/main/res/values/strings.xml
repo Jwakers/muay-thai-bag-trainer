@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Muay Thai Bag Trainer</string>
+    <string name="title_activity_main">Muay Thai Bag Trainer</string>
+    <string name="package_name">com.jackwakeham.muaythaibagtrainer</string>
+    <string name="custom_url_scheme">com.jackwakeham.muaythaibagtrainer</string>
+</resources>
