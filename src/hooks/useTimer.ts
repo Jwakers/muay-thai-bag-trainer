@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Counts down from `initialTime` by 1 each second.
@@ -9,6 +9,11 @@ export function useTimer(initialTime: number, running = true): number {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [prevRunning, setPrevRunning] = useState(running);
   const [prevInitial, setPrevInitial] = useState(initialTime);
+  const timeLeftRef = useRef(timeLeft);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
 
   if (running !== prevRunning) {
     setPrevRunning(running);
@@ -24,12 +29,23 @@ export function useTimer(initialTime: number, running = true): number {
   }
 
   useEffect(() => {
-    if (!running || timeLeft === 0) return undefined;
+    if (!running) return undefined;
+    if (timeLeftRef.current <= 0) return undefined;
     const timer = setInterval(() => {
-      setTimeLeft((t) => (t > 0 ? t - 1 : 0));
+      setTimeLeft((t) => {
+        if (t <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        const next = t - 1;
+        if (next <= 0) {
+          clearInterval(timer);
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [running, timeLeft]);
+  }, [running]);
 
   return running ? timeLeft : initialTime;
 }

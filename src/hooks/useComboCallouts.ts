@@ -57,17 +57,21 @@ export function useComboCallouts(
           audio.preload = "auto";
           audio.src = url;
 
-          await new Promise<"ok" | "fail">((resolve) => {
-            audio.addEventListener("ended", () => resolve("ok"), {
+          const playedOk = await new Promise<boolean>((resolve) => {
+            audio.addEventListener("ended", () => resolve(true), {
               once: true,
             });
-            audio.addEventListener("error", () => resolve("fail"), {
+            audio.addEventListener("error", () => resolve(false), {
               once: true,
             });
-            void audio.play().catch(() => resolve("fail"));
+            void audio.play().catch(() => resolve(false));
           });
 
           currentAudioRef.current = null;
+
+          if (!playedOk) {
+            console.warn(`Callout clip failed to play: ${url}`);
+          }
 
           if (cancelled) break;
 

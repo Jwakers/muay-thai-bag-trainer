@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { InputField } from "../components/InputField";
+import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
 import type { AppSettings, ScreenId } from "../types";
 
 function formatTime(totalSeconds: number): string {
@@ -73,7 +74,9 @@ export function SettingsScreen({
           ? preWorkout
           : settings.preWorkoutCountdownSeconds,
       audibleCountdownLastSeconds:
-        Number.isFinite(audibleLast) && audibleLast >= 0 && audibleLast <= 10
+        Number.isFinite(audibleLast) &&
+        audibleLast >= 0 &&
+        audibleLast <= COUNTDOWN_MAX_SECONDS
           ? audibleLast
           : settings.audibleCountdownLastSeconds,
       tenSecondWarning: localSettings.tenSecondWarning,
@@ -166,7 +169,7 @@ export function SettingsScreen({
                 <span className="block">Countdown audio (last N seconds)</span>
                 <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
                   Plays before prep ends, rest ends, and each round ends. 0 = off,
-                  max 10 (bundled clips). Uses callout volume.
+                  max {COUNTDOWN_MAX_SECONDS} (bundled clips). Uses callout volume.
                 </span>
               </>
             }

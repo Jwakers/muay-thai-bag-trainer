@@ -57,7 +57,7 @@ export function ActiveTrainingScreen({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [prepSecondsLeft, workoutRoundStarted, needsPreWorkoutPrep]);
+  }, [workoutRoundStarted, needsPreWorkoutPrep]);
 
   const timeLeft = useTimer(settings.roundDuration, workoutRoundStarted);
 

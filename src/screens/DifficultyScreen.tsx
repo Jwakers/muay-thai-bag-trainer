@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "../components/Button";
 import { resumeSharedAudioContext } from "../audio/sharedAudioContext";
-import { useScreenWakeLock } from "../hooks/useScreenWakeLock";
 import type { Difficulty, ScreenId } from "../types";
 
 export interface DifficultyScreenProps {
@@ -13,7 +12,6 @@ export function DifficultyScreen({
   onNavigate,
   onSelectDifficulty,
 }: DifficultyScreenProps) {
-  useScreenWakeLock();
   return (
     <div className="flex flex-col min-h-screen p-8 bg-brand-background">
       <div className="mb-power">

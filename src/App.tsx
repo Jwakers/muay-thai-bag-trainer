@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { COUNTDOWN_MAX_SECONDS } from './data/countdownAudio';
 import { usePwaInstall } from './hooks/usePwaInstall';
 import type { AppSettings, Difficulty, ScreenId } from './types';
 import { ActiveTrainingScreen } from './screens/ActiveTrainingScreen';
@@ -14,8 +15,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   roundDuration: 60,
   restDuration: 30,
   totalRounds: 5,
-  preWorkoutCountdownSeconds: 10,
-  audibleCountdownLastSeconds: 10,
+  preWorkoutCountdownSeconds: COUNTDOWN_MAX_SECONDS,
+  audibleCountdownLastSeconds: COUNTDOWN_MAX_SECONDS,
   tenSecondWarning: true,
   difficulty: 'beginner',
   calloutsEnabled: true,
@@ -71,7 +72,10 @@ function loadSettings(): AppSettings {
       audibleCountdownLastSeconds:
         typeof o.audibleCountdownLastSeconds === 'number' &&
         Number.isFinite(o.audibleCountdownLastSeconds)
-          ? Math.min(10, Math.max(0, Math.floor(o.audibleCountdownLastSeconds)))
+          ? Math.min(
+              COUNTDOWN_MAX_SECONDS,
+              Math.max(0, Math.floor(o.audibleCountdownLastSeconds)),
+            )
           : DEFAULT_SETTINGS.audibleCountdownLastSeconds,
     };
   } catch (e) {

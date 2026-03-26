@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Builds `public/audio/countdown-{n}.wav` for n = 1…10 via macOS `say` + `afconvert`.
+ * Builds `public/audio/countdown-{n}.wav` for n = 1…COUNTDOWN_MAX_SECONDS via macOS `say` + `afconvert`.
  * Phrases match seconds left (e.g. "10!" … "1!"), same style as combo callouts.
  *
  * Usage: npm run generate:countdown
