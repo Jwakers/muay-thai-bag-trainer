@@ -172,8 +172,7 @@ export function SettingsScreen({
                 <span className="block">Countdown audio (last N seconds)</span>
                 <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
                   Plays before prep ends, rest ends, and each round ends. 0 =
-                  off, max {COUNTDOWN_MAX_SECONDS} (bundled clips). Uses callout
-                  volume.
+                  off, max {COUNTDOWN_MAX_SECONDS}. Uses callout volume.
                 </span>
               </>
             }
