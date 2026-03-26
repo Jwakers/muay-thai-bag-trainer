@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "generate:callouts": "tsx scripts/generate-callout-audio.ts"
+    "generate:callouts": "tsx scripts/generate-callout-audio.ts",
+    "generate:countdown": "tsx scripts/generate-countdown-audio.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",

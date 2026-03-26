@@ -1,27 +1,8 @@
 import { useEffect, useRef } from "react";
 import { playSilenceChain } from "../audio/silentWav";
-import { CALLOUT_LABELS, isCalloutId, type CalloutId } from "../data/callouts";
+import { isCalloutId, type CalloutId } from "../data/callouts";
 
-const CLIP_GAP_MS = 80;
-
-function speakCallout(text: string, utteranceVolume = 1): Promise<void> {
-  const v = Math.min(
-    1,
-    Math.max(0, Number.isFinite(utteranceVolume) ? utteranceVolume : 1),
-  );
-  return new Promise((resolve) => {
-    if (typeof speechSynthesis === "undefined") {
-      queueMicrotask(resolve);
-      return;
-    }
-    const u = new SpeechSynthesisUtterance(text);
-    u.volume = v;
-    u.rate = 1.12;
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
-    speechSynthesis.speak(u);
-  });
-}
+const CLIP_GAP_MS = 90;
 
 function clampRepetitions(n: number): number {
   if (!Number.isFinite(n)) return 1;
@@ -76,9 +57,13 @@ export function useComboCallouts(
           audio.preload = "auto";
           audio.src = url;
 
-          const result = await new Promise<"ok" | "fail">((resolve) => {
-            audio.addEventListener("ended", () => resolve("ok"), { once: true });
-            audio.addEventListener("error", () => resolve("fail"), { once: true });
+          await new Promise<"ok" | "fail">((resolve) => {
+            audio.addEventListener("ended", () => resolve("ok"), {
+              once: true,
+            });
+            audio.addEventListener("error", () => resolve("fail"), {
+              once: true,
+            });
             void audio.play().catch(() => resolve("fail"));
           });
 
@@ -86,11 +71,7 @@ export function useComboCallouts(
 
           if (cancelled) break;
 
-          if (result === "fail") {
-            await speakCallout(CALLOUT_LABELS[id], volume);
-          } else {
-            await playSilenceChain(CLIP_GAP_MS, setCurrentAudio, isCancelled);
-          }
+          await playSilenceChain(CLIP_GAP_MS, setCurrentAudio, isCancelled);
         }
       };
 
@@ -115,9 +96,6 @@ export function useComboCallouts(
         a.pause();
         a.src = "";
         currentAudioRef.current = null;
-      }
-      if (typeof speechSynthesis !== "undefined") {
-        speechSynthesis.cancel();
       }
     };
   }, [calloutIdsKey, enabled, volume, reps, pauseMs]);

@@ -21,10 +21,10 @@ export function Button({
   let variantStyles = '';
   if (variant === 'primary') {
     variantStyles =
-      'bg-gradient-to-r from-brand-primary to-brand-primary-fixed-dim text-brand-on-primary hover:brightness-110 active:to-brand-primary px-[1.4rem] py-[1rem]';
+      'bg-gradient-to-r from-brand-primary to-brand-primary-fixed-dim text-brand-on-primary hover:brightness-110 active:to-brand-primary px-standard py-4';
   } else if (variant === 'secondary') {
     variantStyles =
-      'border border-brand-outline-variant/20 text-brand-on-surface hover:bg-white/5 active:bg-white/10 px-[1.4rem] py-[1rem]';
+      'border border-brand-outline-variant/20 text-brand-on-surface hover:bg-white/5 active:bg-white/10 px-standard py-4';
   }
 
   return (

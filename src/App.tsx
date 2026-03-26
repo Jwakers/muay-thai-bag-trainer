@@ -14,6 +14,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   roundDuration: 60,
   restDuration: 30,
   totalRounds: 5,
+  preWorkoutCountdownSeconds: 10,
+  audibleCountdownLastSeconds: 10,
   tenSecondWarning: true,
   difficulty: 'beginner',
   calloutsEnabled: true,
@@ -37,6 +39,12 @@ function loadSettings(): AppSettings {
       roundDuration: typeof o.roundDuration === 'number' ? o.roundDuration : DEFAULT_SETTINGS.roundDuration,
       restDuration: typeof o.restDuration === 'number' ? o.restDuration : DEFAULT_SETTINGS.restDuration,
       totalRounds: typeof o.totalRounds === 'number' ? o.totalRounds : DEFAULT_SETTINGS.totalRounds,
+      preWorkoutCountdownSeconds:
+        typeof o.preWorkoutCountdownSeconds === 'number' &&
+        o.preWorkoutCountdownSeconds >= 0 &&
+        o.preWorkoutCountdownSeconds <= 120
+          ? Math.floor(o.preWorkoutCountdownSeconds)
+          : DEFAULT_SETTINGS.preWorkoutCountdownSeconds,
       tenSecondWarning:
         typeof o.tenSecondWarning === 'boolean' ? o.tenSecondWarning : DEFAULT_SETTINGS.tenSecondWarning,
       difficulty: isDifficulty(o.difficulty) ? o.difficulty : DEFAULT_SETTINGS.difficulty,
@@ -60,6 +68,11 @@ function loadSettings(): AppSettings {
         o.calloutRepeatPauseSeconds <= 120
           ? Math.floor(o.calloutRepeatPauseSeconds)
           : DEFAULT_SETTINGS.calloutRepeatPauseSeconds,
+      audibleCountdownLastSeconds:
+        typeof o.audibleCountdownLastSeconds === 'number' &&
+        Number.isFinite(o.audibleCountdownLastSeconds)
+          ? Math.min(10, Math.max(0, Math.floor(o.audibleCountdownLastSeconds)))
+          : DEFAULT_SETTINGS.audibleCountdownLastSeconds,
     };
   } catch (e) {
     console.warn(e);

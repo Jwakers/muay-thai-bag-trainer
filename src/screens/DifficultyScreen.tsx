@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "../components/Button";
 import { resumeSharedAudioContext } from "../audio/sharedAudioContext";
+import { useScreenWakeLock } from "../hooks/useScreenWakeLock";
 import type { Difficulty, ScreenId } from "../types";
 
 export interface DifficultyScreenProps {
@@ -12,13 +13,14 @@ export function DifficultyScreen({
   onNavigate,
   onSelectDifficulty,
 }: DifficultyScreenProps) {
+  useScreenWakeLock();
   return (
     <div className="flex flex-col min-h-screen p-8 bg-brand-background">
-      <div className="mb-[2.75rem]">
-        <h2 className="font-display text-brand-on-surface text-8 md:text-[3rem] leading-none uppercase mb-[1.4rem]">
+      <div className="mb-power">
+        <h2 className="font-display text-brand-on-surface text-4xl md:text-5xl leading-none uppercase mb-standard">
           Select Intensity
         </h2>
-        <p className="font-body text-brand-outline text-[1.1rem]">
+        <p className="font-body text-brand-outline text-lg">
           Choose your combination complexity for this session.
         </p>
       </div>
@@ -30,10 +32,10 @@ export function DifficultyScreen({
             void resumeSharedAudioContext();
             onSelectDifficulty("beginner");
           }}
-          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-[#a8e6cf] p-6 text-left transition-colors cursor-pointer group"
+          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-8 border-l-[#a8e6cf] p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
-            <h3 className="font-display text-[1.5rem] uppercase text-brand-on-surface group-hover:text-[#a8e6cf] transition-colors">
+            <h3 className="font-display text-2xl uppercase text-brand-on-surface group-hover:text-[#a8e6cf] transition-colors">
               Beginner
             </h3>
             <ArrowRight
@@ -42,7 +44,7 @@ export function DifficultyScreen({
               strokeWidth={2.5}
             />
           </div>
-          <p className="font-body text-brand-outline mt-2 text-[0.9rem]">
+          <p className="font-body text-brand-outline mt-2 text-sm">
             Fundamentals. 2-3 strikes with simple rhythm.
           </p>
         </button>
@@ -53,10 +55,10 @@ export function DifficultyScreen({
             void resumeSharedAudioContext();
             onSelectDifficulty("intermediate");
           }}
-          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-primary p-6 text-left transition-colors cursor-pointer group"
+          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-8 border-l-brand-primary p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
-            <h3 className="font-display text-[1.5rem] uppercase text-brand-on-surface group-hover:text-brand-primary transition-colors">
+            <h3 className="font-display text-2xl uppercase text-brand-on-surface group-hover:text-brand-primary transition-colors">
               Intermediate
             </h3>
             <ArrowRight
@@ -65,7 +67,7 @@ export function DifficultyScreen({
               strokeWidth={2.5}
             />
           </div>
-          <p className="font-body text-brand-outline mt-2 text-[0.9rem]">
+          <p className="font-body text-brand-outline mt-2 text-sm">
             Level changing. 4-5 strikes and basic counters.
           </p>
         </button>
@@ -76,10 +78,10 @@ export function DifficultyScreen({
             void resumeSharedAudioContext();
             onSelectDifficulty("advanced");
           }}
-          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-error p-6 text-left transition-colors cursor-pointer group"
+          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-8 border-l-brand-error p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
-            <h3 className="font-display text-[1.5rem] uppercase text-brand-on-surface group-hover:text-brand-error transition-colors">
+            <h3 className="font-display text-2xl uppercase text-brand-on-surface group-hover:text-brand-error transition-colors">
               Advanced
             </h3>
             <ArrowRight
@@ -88,7 +90,7 @@ export function DifficultyScreen({
               strokeWidth={2.5}
             />
           </div>
-          <p className="font-body text-brand-outline mt-2 text-[0.9rem]">
+          <p className="font-body text-brand-outline mt-2 text-sm">
             Complex flow. Elbows, specific feints, and heavy momentum.
           </p>
         </button>
@@ -99,10 +101,10 @@ export function DifficultyScreen({
             void resumeSharedAudioContext();
             onSelectDifficulty("mixed");
           }}
-          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-[8px] border-l-brand-tertiary p-6 text-left transition-colors cursor-pointer group"
+          className="bg-brand-surface-container-low hover:bg-white/5 active:bg-white/10 border-l-8 border-l-brand-tertiary p-6 text-left transition-colors cursor-pointer group"
         >
           <div className="flex justify-between items-center">
-            <h3 className="font-display text-[1.5rem] uppercase text-brand-on-surface group-hover:text-brand-tertiary transition-colors">
+            <h3 className="font-display text-2xl uppercase text-brand-on-surface group-hover:text-brand-tertiary transition-colors">
               Mixed
             </h3>
             <ArrowRight
@@ -111,13 +113,13 @@ export function DifficultyScreen({
               strokeWidth={2.5}
             />
           </div>
-          <p className="font-body text-brand-outline mt-2 text-[0.9rem]">
+          <p className="font-body text-brand-outline mt-2 text-sm">
             Diverse training. A completely open mix of all difficulties.
           </p>
         </button>
       </div>
 
-      <div className="mt-auto pt-[2.75rem]">
+      <div className="mt-auto pt-power">
         <Button
           variant="secondary"
           className="w-full"

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Button } from "../components/Button";
+import { useAudibleCountdownWav } from "../hooks/useAudibleCountdownWav";
+import { useScreenWakeLock } from "../hooks/useScreenWakeLock";
 import { useTimer } from "../hooks/useTimer";
 import type { AppSettings, ScreenId } from "../types";
 
@@ -20,7 +22,14 @@ export function RestScreen({
   settings,
   onNextRound,
 }: RestScreenProps) {
+  useScreenWakeLock();
   const timeLeft = useTimer(settings.restDuration);
+
+  useAudibleCountdownWav(
+    timeLeft,
+    settings.audibleCountdownLastSeconds,
+    settings.calloutsVolume,
+  );
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -30,26 +39,26 @@ export function RestScreen({
   }, [timeLeft, onNavigate, onNextRound]);
 
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background border-t-[8px] border-t-brand-tertiary">
+    <div className="flex flex-col min-h-screen p-8 bg-brand-background border-t-8 border-t-brand-tertiary">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="font-display text-brand-tertiary text-8 leading-none uppercase">
+        <h2 className="font-display text-brand-tertiary text-4xl md:text-5xl leading-none uppercase">
           Rest
         </h2>
-        <div className="font-label text-brand-outline font-bold uppercase tracking-widest text-[0.75rem]">
+        <div className="font-label text-brand-outline font-bold uppercase tracking-widest text-xs">
           Recovery
         </div>
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center">
-        <div className="font-display text-brand-on-surface text-[6rem] md:text-[8rem] tabular-nums tracking-tighter leading-none text-center drop-shadow-[0_0_15px_rgba(233,170,255,0.2)]">
+        <div className="font-display text-brand-on-surface text-8xl md:text-9xl tabular-nums tracking-tighter leading-none text-center drop-shadow-[0_0_15px_rgba(233,170,255,0.2)]">
           {formatTime(timeLeft)}
         </div>
-        <p className="font-body text-brand-outline text-center mt-6 text-[1.2rem] max-w-xs mx-auto">
+        <p className="font-body text-brand-outline text-center mt-6 text-lg max-w-xs mx-auto">
           Heart rate recovery phase.
         </p>
       </div>
 
-      <div className="mt-auto flex flex-col gap-[1.4rem]">
+      <div className="mt-auto flex flex-col gap-standard">
         <Button
           variant="primary"
           className="!bg-gradient-to-r !from-brand-tertiary !to-brand-tertiary-fixed-dim !text-brand-on-tertiary"
