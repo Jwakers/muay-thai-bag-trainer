@@ -101,7 +101,7 @@ export function ActiveTrainingScreen({
   const isFinalRound = currentRound >= settings.totalRounds;
 
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background">
+    <div className="flex flex-col min-h-full p-8 bg-brand-background">
       <div className="flex justify-between items-center mb-8">
         <h2 className="font-display text-brand-primary text-4xl md:text-5xl leading-none uppercase">
           {isFinalRound ? "Final Round" : `Round ${currentRound}`}

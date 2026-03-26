@@ -15,7 +15,7 @@ export function HomeScreen({
   pwaInstall,
 }: HomeScreenProps) {
   return (
-    <div className="flex flex-col min-h-screen p-8">
+    <div className="flex flex-col min-h-full p-8">
       <PwaInstallBanner pwa={pwaInstall} />
       <div className="flex-1 flex flex-col justify-center">
         <h1 className="font-display text-6xl md:text-7xl tracking-tight leading-[1.1] mb-4">

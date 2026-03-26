@@ -7,8 +7,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 const require = createRequire(import.meta.url);
 /** Rolldown/Vite 8 can fail to resolve this bare import from virtual:pwa-register unless hoisted + aliased. */
 const workboxWindowEntry = require.resolve('workbox-window/build/workbox-window.prod.es5.mjs');
+const now = new Date();
+const twoDigits = (n: number) => n.toString().padStart(2, '0');
+const BUILD_TIME = `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(now.getDate())} ${twoDigits(now.getHours())}:${twoDigits(now.getMinutes())}:${twoDigits(now.getSeconds())}`;
 
 export default defineConfig({
+  define: {
+    __BUILD_TIME__: JSON.stringify(BUILD_TIME),
+  },
   resolve: {
     alias: {
       'workbox-window': workboxWindowEntry,

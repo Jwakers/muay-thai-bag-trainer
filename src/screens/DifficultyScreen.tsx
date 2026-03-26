@@ -13,7 +13,7 @@ export function DifficultyScreen({
   onSelectDifficulty,
 }: DifficultyScreenProps) {
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background">
+    <div className="flex flex-col min-h-full p-8 bg-brand-background">
       <div className="mb-power">
         <h2 className="font-display text-brand-on-surface text-4xl md:text-5xl leading-none uppercase mb-standard">
           Select Intensity

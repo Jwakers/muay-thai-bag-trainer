@@ -26,7 +26,7 @@ export function WorkoutCompleteScreen({
   const totalActiveTime = currentRound * settings.roundDuration;
 
   return (
-    <div className="flex flex-col min-h-screen p-8 bg-brand-background border-t-8 border-t-brand-primary">
+    <div className="flex flex-col min-h-full p-8 bg-brand-background border-t-8 border-t-brand-primary">
       <div className="flex-1 flex flex-col justify-center items-center text-center">
         <h1 className="font-display text-6xl md:text-7xl tracking-tight leading-[1.1] mb-6 text-brand-primary drop-shadow-[0_0_15px_rgba(255,143,115,0.2)]">
           WORKOUT
