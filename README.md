@@ -67,7 +67,7 @@ This launches Vite with external access and runs the Capacitor iOS app pointed a
 Notes:
 
 - Keep the terminal/dev server running while testing.
-- If device cannot connect, verify local firewall and that both devices are on the same network segment.
+- If the device cannot connect, verify the local firewall and that both devices are on the same network segment.
 - If networking is flaky, fall back to Option A.
 
 ## Simulator workflow

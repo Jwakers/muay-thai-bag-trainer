@@ -1,4 +1,4 @@
-package com.getcapacitor.myapp;
+package com.jackwakeham.muaythaibagtrainer;
 
 import static org.junit.Assert.*;
 
