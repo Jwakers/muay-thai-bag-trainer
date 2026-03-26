@@ -1,0 +1,32 @@
+---
+description: Tailwind CSS v4 styling conventions for this project
+globs: "**/*.{tsx,ts,css}"
+alwaysApply: true
+---
+
+# Tailwind CSS v4
+
+This app uses **Tailwind v4** with `@import "tailwindcss"` and design tokens in `src/index.css` (`@theme { ... }`).
+
+## Prefer the default scale over arbitrary values
+
+Use built-in spacing, typography, and border utilities when they match the intended size (for example `mt-11` for 2.75rem, `text-lg`, `border-t-8`, `gap-6`, `text-8xl`).
+
+Avoid `mt-[2.75rem]`, `text-[1.2rem]`, `border-t-[8px]`, etc., unless there is no close match on the scale.
+
+## Project semantic spacing (`@theme`)
+
+`src/index.css` defines extra spacing keys that map to design rhythm:
+
+- `--spacing-standard` (1.4rem) → `p-standard`, `gap-standard`, `mb-standard`, `px-standard`, etc.
+- `--spacing-power` (2.75rem) → `pt-power`, `mb-power`, `py-power`, `my-power`, etc.
+
+Use these for repeated layout rhythm instead of duplicating arbitrary rem values.
+
+## When arbitrary classes are still appropriate
+
+Keep bracket utilities for genuinely one-off values: complex `drop-shadow-[…]`, `shadow-[…]`, `max-h-[40vh]`, sub-pixel `tracking-[…]`, hex colors not modeled as theme tokens, etc.
+
+## Invalid class names
+
+Do not use shorthand like `text-8` for display sizes — that is not a valid Tailwind font-size utility. Use the real scale steps (`text-8xl`, `text-2xl`, `text-sm`, …).

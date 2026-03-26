@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { InputField } from "../components/InputField";
+import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
 import type { AppSettings, ScreenId } from "../types";
 
 function formatTime(totalSeconds: number): string {
@@ -20,6 +21,8 @@ interface LocalSettingsForm {
   roundDuration: string;
   restDuration: string;
   totalRounds: string;
+  preWorkoutCountdownSeconds: string;
+  audibleCountdownLastSeconds: string;
   tenSecondWarning: boolean;
   calloutsEnabled: boolean;
   calloutsVolumePercent: number;
@@ -42,6 +45,9 @@ export function SettingsScreen({
     roundDuration: formatTime(settings.roundDuration),
     restDuration: formatTime(settings.restDuration),
     totalRounds: settings.totalRounds.toString(),
+    preWorkoutCountdownSeconds: settings.preWorkoutCountdownSeconds.toString(),
+    audibleCountdownLastSeconds:
+      settings.audibleCountdownLastSeconds.toString(),
     tenSecondWarning: settings.tenSecondWarning,
     calloutsEnabled: settings.calloutsEnabled,
     calloutsVolumePercent: Math.round(settings.calloutsVolume * 100),
@@ -50,9 +56,14 @@ export function SettingsScreen({
   });
 
   const voiceControlsDisabled = !localSettings.calloutsEnabled;
+  const volumeSliderDisabled =
+    !localSettings.calloutsEnabled &&
+    localSettings.audibleCountdownLastSeconds === "0";
 
   const handleCommit = () => {
     const totalRounds = parseInt(localSettings.totalRounds, 10);
+    const preWorkout = parseInt(localSettings.preWorkoutCountdownSeconds, 10);
+    const audibleLast = parseInt(localSettings.audibleCountdownLastSeconds, 10);
     const comboReps = parseInt(localSettings.calloutComboRepetitions, 10);
     const repeatPause = parseInt(localSettings.calloutRepeatPauseSeconds, 10);
     onSaveSettings({
@@ -62,9 +73,18 @@ export function SettingsScreen({
       totalRounds: Number.isFinite(totalRounds)
         ? totalRounds
         : settings.totalRounds,
+      preWorkoutCountdownSeconds: Number.isFinite(preWorkout)
+        ? Math.max(0, Math.min(120, preWorkout))
+        : settings.preWorkoutCountdownSeconds,
+      audibleCountdownLastSeconds: Number.isFinite(audibleLast)
+        ? Math.max(0, Math.min(COUNTDOWN_MAX_SECONDS, audibleLast))
+        : settings.audibleCountdownLastSeconds,
       tenSecondWarning: localSettings.tenSecondWarning,
       calloutsEnabled: localSettings.calloutsEnabled,
-      calloutsVolume: Math.min(1, Math.max(0, localSettings.calloutsVolumePercent / 100)),
+      calloutsVolume: Math.min(
+        1,
+        Math.max(0, localSettings.calloutsVolumePercent / 100),
+      ),
       calloutComboRepetitions:
         Number.isFinite(comboReps) && comboReps >= 1 && comboReps <= 8
           ? comboReps
@@ -79,15 +99,15 @@ export function SettingsScreen({
 
   return (
     <div className="flex flex-col min-h-screen p-8 bg-brand-background">
-      <div className="mb-[2.75rem]">
-        <h2 className="font-display text-brand-on-surface text-8 md:text-[3rem] leading-none uppercase mb-[1.4rem]">
+      <div className="mb-power">
+        <h2 className="font-display text-brand-on-surface text-4xl md:text-5xl leading-none uppercase mb-standard">
           App Settings
         </h2>
       </div>
 
       <div className="flex flex-col flex-1">
-        <div className="bg-brand-surface-container-low p-[1.4rem] mb-8 border-l-[8px] border-l-brand-primary">
-          <h3 className="font-display text-[1.2rem] md:text-[1.5rem] uppercase mb-[1.4rem] text-brand-primary tracking-tight">
+        <div className="bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-primary">
+          <h3 className="font-display text-lg md:text-2xl uppercase mb-standard text-brand-primary tracking-tight">
             Intervals
           </h3>
           <InputField
@@ -120,15 +140,60 @@ export function SettingsScreen({
               })
             }
           />
+          <InputField
+            id="pre-workout-countdown"
+            label={
+              <>
+                <span className="block">Pre-workout countdown</span>
+                <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
+                  Before round 1 only. 0 = skip, max 120.
+                </span>
+              </>
+            }
+            value={localSettings.preWorkoutCountdownSeconds}
+            onChange={(e) =>
+              setLocalSettings({
+                ...localSettings,
+                preWorkoutCountdownSeconds: e.target.value,
+              })
+            }
+            inputMode="numeric"
+          />
         </div>
 
-        <div className="bg-brand-surface-container-low p-[1.4rem] mb-8 border-l-[8px] border-l-brand-secondary">
-          <h3 className="font-display text-[1.2rem] md:text-[1.5rem] uppercase mb-[1.4rem] text-brand-secondary tracking-tight">
-            Alerts
+        <div className="bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-secondary">
+          <h3 className="font-display text-lg md:text-2xl uppercase mb-standard text-brand-secondary tracking-tight">
+            Countdown warnings
           </h3>
-          <label className="flex items-center justify-between py-2 cursor-pointer">
-            <span className="font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface">
-              10-Second Warning
+          <InputField
+            id="audible-countdown-last-seconds"
+            label={
+              <>
+                <span className="block">Countdown audio (last N seconds)</span>
+                <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
+                  Plays before prep ends, rest ends, and each round ends. 0 =
+                  off, max {COUNTDOWN_MAX_SECONDS} (bundled clips). Uses callout
+                  volume.
+                </span>
+              </>
+            }
+            value={localSettings.audibleCountdownLastSeconds}
+            onChange={(e) =>
+              setLocalSettings({
+                ...localSettings,
+                audibleCountdownLastSeconds: e.target.value,
+              })
+            }
+            inputMode="numeric"
+          />
+          <label className="flex items-start justify-between gap-4 py-2 cursor-pointer">
+            <span className="flex flex-col gap-1 pr-2">
+              <span className="font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface">
+                Visual warning (last 10s of round)
+              </span>
+              <span className="font-body text-xs normal-case text-brand-outline leading-snug">
+                Pulsing red timer during the active round only.
+              </span>
             </span>
             <input
               type="checkbox"
@@ -139,17 +204,17 @@ export function SettingsScreen({
                   tenSecondWarning: e.target.checked,
                 })
               }
-              className="w-5 h-5 accent-brand-secondary cursor-pointer"
+              className="w-5 h-5 accent-brand-secondary cursor-pointer shrink-0 mt-1"
             />
           </label>
         </div>
 
-        <div className="bg-brand-surface-container-low p-[1.4rem] mb-8 border-l-[8px] border-l-brand-tertiary">
-          <h3 className="font-display text-[1.2rem] md:text-[1.5rem] uppercase mb-[1.4rem] text-brand-tertiary tracking-tight">
+        <div className="bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-tertiary">
+          <h3 className="font-display text-lg md:text-2xl uppercase mb-standard text-brand-tertiary tracking-tight">
             Callouts
           </h3>
           <label className="flex items-center justify-between py-2 cursor-pointer mb-4">
-            <span className="font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface">
+            <span className="font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface">
               Voice callouts
             </span>
             <input
@@ -164,14 +229,17 @@ export function SettingsScreen({
               className="w-5 h-5 accent-brand-tertiary cursor-pointer"
             />
           </label>
-          <div className={voiceControlsDisabled ? "opacity-40" : ""}>
+          <div className={volumeSliderDisabled ? "opacity-40" : ""}>
             <label
               htmlFor="callouts-volume"
-              className={`font-label uppercase text-[0.8rem] md:text-[0.9rem] font-bold tracking-widest text-brand-on-surface block mb-2 ${
-                voiceControlsDisabled ? "cursor-not-allowed" : ""
+              className={`font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface block mb-2 ${
+                volumeSliderDisabled ? "cursor-not-allowed" : ""
               }`}
             >
               Callout volume ({localSettings.calloutsVolumePercent}%)
+              <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
+                Also controls countdown audio.
+              </span>
             </label>
             <input
               id="callouts-volume"
@@ -179,14 +247,14 @@ export function SettingsScreen({
               min={0}
               max={100}
               value={localSettings.calloutsVolumePercent}
-              disabled={voiceControlsDisabled}
+              disabled={volumeSliderDisabled}
               onChange={(e) =>
                 setLocalSettings({
                   ...localSettings,
                   calloutsVolumePercent: Number(e.target.value),
                 })
               }
-              className={`w-full accent-brand-tertiary ${voiceControlsDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+              className={`w-full accent-brand-tertiary ${volumeSliderDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
             <InputField
               id="callout-combo-repetitions"
@@ -218,7 +286,7 @@ export function SettingsScreen({
         </div>
       </div>
 
-      <div className="mt-auto pt-[2.75rem] flex flex-col gap-[1.4rem]">
+      <div className="mt-auto pt-power flex flex-col gap-standard">
         <Button variant="primary" onClick={handleCommit}>
           Save Settings
         </Button>

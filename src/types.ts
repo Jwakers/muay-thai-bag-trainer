@@ -14,6 +14,12 @@ export interface AppSettings {
   roundDuration: number;
   restDuration: number;
   totalRounds: number;
+  /** Countdown before round 1 only; 0 = off. */
+  preWorkoutCountdownSeconds: number;
+  /**
+   * Bundled WAV countdown for the last N seconds (max 10); prep, rest, and each round. 0 = off.
+   */
+  audibleCountdownLastSeconds: number;
   tenSecondWarning: boolean;
   difficulty: Difficulty;
   /** Voice callouts during active rounds (beginner combos with calloutIds). */
