@@ -100,7 +100,7 @@ function App() {
   const [currentRound, setCurrentRound] = useState(1);
 
   return (
-    <div className="min-h-dvh bg-brand-background text-brand-on-surface flex items-center justify-center pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="h-dvh bg-brand-background text-brand-on-surface flex items-center justify-center pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <div className="w-full max-w-md min-h-full bg-brand-background shadow-2xl relative overflow-hidden flex flex-col">
         <div className="bg-brand-secondary text-brand-background text-center font-label text-xs tracking-widest px-standard py-micro">
           BUILD {__BUILD_TIME__}
