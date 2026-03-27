@@ -3,17 +3,17 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { PulseTimer } from "../components/PulseTimer";
 import { WorkoutCard } from "../components/WorkoutCard";
-import { getRandomCombos } from "../data/workoutData";
 import { useAudibleCountdownWav } from "../hooks/useAudibleCountdownWav";
 import { useComboCallouts } from "../hooks/useComboCallouts";
 import { useScreenWakeLock } from "../hooks/useScreenWakeLock";
 import { useTimer } from "../hooks/useTimer";
-import type { AppSettings, ScreenId } from "../types";
+import type { AppSettings, ScreenId, WorkoutCombo } from "../types";
 
 export interface ActiveTrainingScreenProps {
   onNavigate: (screen: ScreenId) => void;
   settings: AppSettings;
   currentRound: number;
+  combo: WorkoutCombo | undefined;
 }
 
 function formatTime(seconds: number): string {
@@ -26,12 +26,9 @@ export function ActiveTrainingScreen({
   onNavigate,
   settings,
   currentRound,
+  combo,
 }: ActiveTrainingScreenProps) {
   useScreenWakeLock();
-  const [currentCombos] = useState(() =>
-    getRandomCombos(1, settings.difficulty),
-  );
-  const activeCombo = currentCombos[0];
 
   const needsPreWorkoutPrep =
     currentRound === 1 && settings.preWorkoutCountdownSeconds > 0;
@@ -75,7 +72,7 @@ export function ActiveTrainingScreen({
   );
 
   useComboCallouts(
-    activeCombo?.calloutIds,
+    combo?.calloutIds,
     settings.calloutsEnabled && workoutRoundStarted,
     settings.calloutsVolume,
     settings.calloutComboRepetitions,
@@ -148,18 +145,7 @@ export function ActiveTrainingScreen({
         <div
           className={`overflow-y-auto max-h-[40vh] pb-4 ${inPrep ? "" : "mt-power"}`}
         >
-          {currentCombos.map((combo, i) => (
-            <WorkoutCard key={i} {...combo} />
-          ))}
-          {settings.calloutsEnabled && !activeCombo?.calloutIds?.length ? (
-            <p
-              role="status"
-              className="font-body text-brand-outline text-center text-sm mt-4 max-w-sm mx-auto"
-            >
-              Voice callouts are not set up for this intensity yet. Use beginner
-              for spoken combos, or turn off voice callouts in settings.
-            </p>
-          ) : null}
+          {combo ? <WorkoutCard {...combo} /> : null}
         </div>
       </div>
       <div className="mt-auto pt-power">

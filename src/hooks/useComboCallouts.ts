@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
-import { playSilenceChain } from "../audio/silentWav";
+import { NativeAudio } from "@capacitor-community/native-audio";
+import type { PluginListenerHandle } from "@capacitor/core";
+import { Capacitor } from "@capacitor/core";
+import { useEffect } from "react";
 import { isCalloutId, type CalloutId } from "../data/callouts";
 
 const CLIP_GAP_MS = 90;
@@ -14,9 +16,13 @@ function clampPauseSeconds(n: number): number {
   return Math.min(120, Math.max(1, Math.floor(n)));
 }
 
+function waitMs(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
- * Plays bundled WAVs: full combo sequence, repeated with a pause between passes.
- * Uses HTMLAudioElement for broad WAV compatibility (e.g. 24-bit exports).
+ * Plays bundled callout WAVs via Capacitor native audio in native apps only.
+ * Web intentionally short-circuits (callouts are app-only for now).
  */
 export function useComboCallouts(
   calloutIds: readonly CalloutId[] | undefined,
@@ -25,57 +31,148 @@ export function useComboCallouts(
   comboRepetitions: number,
   repeatPauseSeconds: number,
 ): void {
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-
   const reps = clampRepetitions(comboRepetitions);
   const pauseMs = clampPauseSeconds(repeatPauseSeconds) * 1000;
   const calloutIdsKey = calloutIds?.join("|") ?? "";
 
   useEffect(() => {
     if (!enabled || volume <= 0 || !calloutIdsKey) return;
+    if (!Capacitor.isNativePlatform()) return;
     const ids = calloutIdsKey.split("|").filter(isCalloutId);
     if (!ids.length) return;
 
     let cancelled = false;
-    currentAudioRef.current = null;
-    const isCancelled = () => cancelled;
-    const setCurrentAudio = (a: HTMLAudioElement | null) => {
-      currentAudioRef.current = a;
+    let playInstanceCounter = 0;
+    const pendingByInstance = new Map<
+      string,
+      {
+        assetId: string;
+        resolve: () => void;
+        timeoutId: ReturnType<typeof setTimeout> | null;
+      }
+    >();
+    const latestInstanceByAsset = new Map<string, string>();
+    const loadedIds = new Set<string>();
+    let completeListener: PluginListenerHandle | null = null;
+
+    const clearPendingByInstance = (playInstanceId: string) => {
+      const pending = pendingByInstance.get(playInstanceId);
+      if (!pending) return;
+      if (pending.timeoutId) {
+        clearTimeout(pending.timeoutId);
+      }
+      const activeForAsset = latestInstanceByAsset.get(pending.assetId);
+      if (activeForAsset === playInstanceId) {
+        latestInstanceByAsset.delete(pending.assetId);
+      }
+      pendingByInstance.delete(playInstanceId);
+      pending.resolve();
+    };
+
+    const clearPendingForAsset = (assetId: string) => {
+      const playInstanceId = latestInstanceByAsset.get(assetId);
+      if (!playInstanceId) return;
+      clearPendingByInstance(playInstanceId);
+    };
+
+    const preloadIds = async () => {
+      for (const id of new Set(ids)) {
+        if (cancelled) break;
+        const candidatePaths = [
+          `audio/${id}.wav`,
+          `public/audio/${id}.wav`,
+          `${id}.wav`,
+        ];
+        let preloaded = false;
+        for (const assetPath of candidatePaths) {
+          try {
+            await NativeAudio.preload({
+              assetId: id,
+              assetPath,
+              volume,
+            });
+            if (cancelled) {
+              void NativeAudio.unload({ assetId: id }).catch(() => {});
+              break;
+            }
+            preloaded = true;
+            break;
+          } catch {
+            // Try the next bundle-relative path candidate.
+          }
+        }
+        if (preloaded) {
+          loadedIds.add(id);
+        } else if (!cancelled) {
+          console.warn(`Callout clip failed to preload: ${id}`);
+        }
+      }
+    };
+
+    const ensureListener = async () => {
+      completeListener = await NativeAudio.addListener(
+        "complete",
+        ({ assetId }) => {
+          clearPendingForAsset(assetId);
+        },
+      );
+      if (cancelled) {
+        await completeListener.remove();
+        completeListener = null;
+      }
+    };
+
+    const playSingle = async (id: string) => {
+      if (cancelled || !loadedIds.has(id)) return;
+      try {
+        await NativeAudio.setVolume({ assetId: id, volume });
+      } catch {
+        // Ignore volume updates if platform audio session rejects it.
+      }
+
+      await new Promise<void>((resolve) => {
+        clearPendingForAsset(id);
+        const playInstanceId = `${id}-${++playInstanceCounter}`;
+        pendingByInstance.set(playInstanceId, {
+          assetId: id,
+          resolve,
+          timeoutId: null,
+        });
+        latestInstanceByAsset.set(id, playInstanceId);
+        void NativeAudio.play({ assetId: id })
+          .then(async () => {
+            if (!pendingByInstance.has(playInstanceId)) return;
+            // Fallback in case complete event does not fire on a device build.
+            const { duration } = await NativeAudio.getDuration({ assetId: id });
+            const durationMs = Math.max(250, Math.ceil(duration * 1000) + 250);
+            const timeoutId = setTimeout(() => {
+              clearPendingByInstance(playInstanceId);
+            }, durationMs);
+            const pending = pendingByInstance.get(playInstanceId);
+            if (!pending) {
+              clearTimeout(timeoutId);
+              return;
+            }
+            pending.timeoutId = timeoutId;
+          })
+          .catch((err) => {
+            console.warn(`Callout clip failed to play: ${id}`, err);
+            clearPendingByInstance(playInstanceId);
+          });
+      });
     };
 
     const run = async () => {
-      const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+      await preloadIds();
+      if (cancelled || loadedIds.size === 0) return;
+      await ensureListener();
+      if (cancelled) return;
 
       const playComboOnce = async () => {
         for (const id of ids) {
           if (cancelled) break;
-          const url = `${base}audio/${id}.wav`;
-
-          const audio = new Audio();
-          currentAudioRef.current = audio;
-          audio.volume = volume;
-          audio.preload = "auto";
-          audio.src = url;
-
-          const playedOk = await new Promise<boolean>((resolve) => {
-            audio.addEventListener("ended", () => resolve(true), {
-              once: true,
-            });
-            audio.addEventListener("error", () => resolve(false), {
-              once: true,
-            });
-            void audio.play().catch(() => resolve(false));
-          });
-
-          currentAudioRef.current = null;
-
-          if (!playedOk) {
-            console.warn(`Callout clip failed to play: ${url}`);
-          }
-
-          if (cancelled) break;
-
-          await playSilenceChain(CLIP_GAP_MS, setCurrentAudio, isCancelled);
+          await playSingle(id);
+          if (!cancelled) await waitMs(CLIP_GAP_MS);
         }
       };
 
@@ -84,9 +181,7 @@ export function useComboCallouts(
         await playComboOnce();
         if (cancelled) break;
         if (pass < reps - 1) {
-          // Wall-clock delay breaks Chrome autoplay after ~few seconds; chain
-          // silent WAV clips so each play() follows the previous media `ended`.
-          await playSilenceChain(pauseMs, setCurrentAudio, isCancelled);
+          await waitMs(pauseMs);
         }
       }
     };
@@ -95,12 +190,16 @@ export function useComboCallouts(
 
     return () => {
       cancelled = true;
-      const a = currentAudioRef.current;
-      if (a) {
-        a.pause();
-        a.src = "";
-        currentAudioRef.current = null;
+      for (const playInstanceId of pendingByInstance.keys()) {
+        clearPendingByInstance(playInstanceId);
       }
+      latestInstanceByAsset.clear();
+      for (const id of loadedIds) {
+        void NativeAudio.stop({ assetId: id }).catch(() => {});
+        void NativeAudio.unload({ assetId: id }).catch(() => {});
+      }
+      void completeListener?.remove();
+      completeListener = null;
     };
   }, [calloutIdsKey, enabled, volume, reps, pauseMs]);
 }

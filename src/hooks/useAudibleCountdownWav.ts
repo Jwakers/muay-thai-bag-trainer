@@ -1,55 +1,96 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { NativeAudio } from "@capacitor-community/native-audio";
 import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
 
 /**
  * Plays bundled countdown WAVs for the last `lastSeconds` of a timer (capped at
- * {@link COUNTDOWN_MAX_SECONDS}). `lastSeconds === 0` or `volume <= 0` disables audio.
+ * {@link COUNTDOWN_MAX_SECONDS}) via native audio on native platforms only.
  */
 export function useAudibleCountdownWav(
   secondsLeft: number,
   lastSeconds: number,
   volume: number,
 ): void {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [loadedIds, setLoadedIds] = useState<Set<string>>(() => new Set());
+  const lastPlayedSecondRef = useRef<number | null>(null);
+  const currentAssetId = `countdown-${secondsLeft}`;
+  const isCurrentAssetLoaded = loadedIds.has(currentAssetId);
 
   useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    if (lastSeconds <= 0 || volume <= 0) return;
+
+    let cancelled = false;
+    const loadedInRun = new Set<string>();
+    const clipIds = Array.from(
+      { length: COUNTDOWN_MAX_SECONDS },
+      (_, i) => `countdown-${i + 1}`,
+    );
+
+    const preload = async () => {
+      for (const id of clipIds) {
+        if (cancelled) break;
+        const candidatePaths = [
+          `audio/${id}.wav`,
+          `public/audio/${id}.wav`,
+          `${id}.wav`,
+        ];
+        for (const assetPath of candidatePaths) {
+          try {
+            await NativeAudio.preload({ assetId: id, assetPath, volume });
+            if (cancelled) {
+              void NativeAudio.unload({ assetId: id }).catch(() => {});
+              break;
+            }
+            loadedInRun.add(id);
+            setLoadedIds((prev) => {
+              if (prev.has(id)) return prev;
+              const next = new Set(prev);
+              next.add(id);
+              return next;
+            });
+            break;
+          } catch {
+            // Try next path candidate.
+          }
+        }
+      }
+    };
+
+    void preload();
+
+    return () => {
+      cancelled = true;
+      for (const id of loadedInRun) {
+        void NativeAudio.stop({ assetId: id }).catch(() => {});
+        void NativeAudio.unload({ assetId: id }).catch(() => {});
+      }
+      setLoadedIds((prev) => {
+        if (prev.size === 0 || loadedInRun.size === 0) return prev;
+        const next = new Set(prev);
+        for (const id of loadedInRun) next.delete(id);
+        return next;
+      });
+    };
+  }, [lastSeconds, volume]);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
     if (lastSeconds <= 0 || volume <= 0) return;
     const cap = Math.min(lastSeconds, COUNTDOWN_MAX_SECONDS);
     if (secondsLeft < 1 || secondsLeft > cap) return;
 
-    const prev = audioRef.current;
-    if (prev) {
-      prev.pause();
-      prev.src = "";
-      audioRef.current = null;
-    }
-
-    const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
-    const url = `${base}audio/countdown-${secondsLeft}.wav`;
-    const audio = new Audio();
-    audioRef.current = audio;
-    audio.volume = volume;
-    audio.preload = "auto";
-    audio.src = url;
-    void audio.play().catch(() => {});
-
-    return () => {
-      if (audioRef.current === audio) {
-        audio.pause();
-        audio.src = "";
-        audioRef.current = null;
-      }
-    };
-  }, [secondsLeft, lastSeconds, volume]);
+    if (!isCurrentAssetLoaded) return;
+    if (lastPlayedSecondRef.current === secondsLeft) return;
+    lastPlayedSecondRef.current = secondsLeft;
+    void NativeAudio.setVolume({ assetId: currentAssetId, volume }).catch(() => {});
+    void NativeAudio.play({ assetId: currentAssetId }).catch(() => {});
+  }, [secondsLeft, lastSeconds, volume, currentAssetId, isCurrentAssetLoaded]);
 
   useEffect(() => {
-    return () => {
-      const a = audioRef.current;
-      if (a) {
-        a.pause();
-        a.src = "";
-        audioRef.current = null;
-      }
-    };
-  }, []);
+    if (secondsLeft < 1) {
+      lastPlayedSecondRef.current = null;
+    }
+  }, [secondsLeft]);
 }
