@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { NativeAudio } from "@capacitor-community/native-audio";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Capacitor } from "@capacitor/core";
-import { NativeAudio } from "@capacitor-community/native-audio";
+import { useEffect } from "react";
 import { isCalloutId, type CalloutId } from "../data/callouts";
 
 const CLIP_GAP_MS = 90;
@@ -103,7 +103,7 @@ export function useComboCallouts(
         }
         if (preloaded) {
           loadedIds.add(id);
-        } else {
+        } else if (!cancelled) {
           console.warn(`Callout clip failed to preload: ${id}`);
         }
       }
