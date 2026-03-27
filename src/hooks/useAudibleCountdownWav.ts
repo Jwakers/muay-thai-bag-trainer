@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { NativeAudio } from "@capacitor-community/native-audio";
 import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
@@ -12,13 +12,14 @@ export function useAudibleCountdownWav(
   lastSeconds: number,
   volume: number,
 ): void {
-  const loadedRef = useRef(false);
+  const [loadedIds, setLoadedIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
     if (lastSeconds <= 0 || volume <= 0) return;
 
     let cancelled = false;
+    const loadedInRun = new Set<string>();
     const clipIds = Array.from(
       { length: COUNTDOWN_MAX_SECONDS },
       (_, i) => `countdown-${i + 1}`,
@@ -35,36 +36,47 @@ export function useAudibleCountdownWav(
         for (const assetPath of candidatePaths) {
           try {
             await NativeAudio.preload({ assetId: id, assetPath, volume });
+            loadedInRun.add(id);
+            setLoadedIds((prev) => {
+              if (prev.has(id)) return prev;
+              const next = new Set(prev);
+              next.add(id);
+              return next;
+            });
             break;
           } catch {
             // Try next path candidate.
           }
         }
       }
-      loadedRef.current = !cancelled;
     };
 
     void preload();
 
     return () => {
       cancelled = true;
-      loadedRef.current = false;
-      for (const id of clipIds) {
+      for (const id of loadedInRun) {
         void NativeAudio.stop({ assetId: id }).catch(() => {});
         void NativeAudio.unload({ assetId: id }).catch(() => {});
       }
+      setLoadedIds((prev) => {
+        if (prev.size === 0 || loadedInRun.size === 0) return prev;
+        const next = new Set(prev);
+        for (const id of loadedInRun) next.delete(id);
+        return next;
+      });
     };
   }, [lastSeconds, volume]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
-    if (!loadedRef.current) return;
     if (lastSeconds <= 0 || volume <= 0) return;
     const cap = Math.min(lastSeconds, COUNTDOWN_MAX_SECONDS);
     if (secondsLeft < 1 || secondsLeft > cap) return;
 
     const assetId = `countdown-${secondsLeft}`;
+    if (!loadedIds.has(assetId)) return;
     void NativeAudio.setVolume({ assetId, volume }).catch(() => {});
     void NativeAudio.play({ assetId }).catch(() => {});
-  }, [secondsLeft, lastSeconds, volume]);
+  }, [secondsLeft, lastSeconds, volume, loadedIds]);
 }

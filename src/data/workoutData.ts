@@ -211,8 +211,10 @@ export function createWorkoutPlan(
   difficulty: Difficulty,
   exclude: readonly WorkoutCombo[] = [],
 ): WorkoutCombo[] {
-  const excluded = new Set(exclude);
-  const available = getComboPool(difficulty).filter((combo) => !excluded.has(combo));
+  const excludedTitles = new Set(exclude.map((combo) => combo.title));
+  const available = getComboPool(difficulty).filter(
+    (combo) => !excludedTitles.has(combo.title),
+  );
   const planLength = Math.max(0, Math.min(Math.floor(count), available.length));
   return shuffle(available).slice(0, planLength);
 }

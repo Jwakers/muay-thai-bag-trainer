@@ -126,11 +126,11 @@ export function SettingsScreen({
             aria-label="Install app for native callout features"
           >
             <p className="font-body text-sm text-brand-on-surface/90">
-              Install this app through your app store to unlock native workout
-              callouts, countdown audio, and advanced audio controls.
+              Native audio features require iOS/Android app builds (App Store /
+              Play Store). Home screen/PWA installs do not enable native audio.
             </p>
           </div>
-          <PwaInstallBanner pwa={pwaInstall} />
+          <PwaInstallBanner pwa={pwaInstall} context="native-audio" />
         </>
       ) : null}
 

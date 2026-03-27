@@ -187,21 +187,18 @@ function App() {
             currentRound={currentRound}
             canAddRound={settings.totalRounds < getMaxRoundsForDifficulty(settings.difficulty)}
             onAddRound={() => {
-              const maxRounds = getMaxRoundsForDifficulty(settings.difficulty);
-              if (settings.totalRounds >= maxRounds) return;
-
-              let didAppend = false;
-              setWorkoutPlan((plan) => {
-                const extra = createWorkoutPlan(1, settings.difficulty, plan);
-                if (extra.length === 0) return plan;
-                didAppend = true;
-                return [...plan, extra[0]];
+              setSettings((s) => {
+                const max = getMaxRoundsForDifficulty(s.difficulty);
+                if (s.totalRounds >= max) return s;
+                setWorkoutPlan((prev) => {
+                  const extra = createWorkoutPlan(1, s.difficulty, prev);
+                  if (extra.length === 0) return prev;
+                  setCurrentRound((r) => r + 1);
+                  setCurrentScreen('active');
+                  return [...prev, extra[0]];
+                });
+                return { ...s, totalRounds: Math.min(max, s.totalRounds + 1) };
               });
-
-              if (!didAppend) return;
-              setSettings((s) => ({ ...s, totalRounds: Math.min(maxRounds, s.totalRounds + 1) }));
-              setCurrentRound((r) => r + 1);
-              setCurrentScreen('active');
             }}
           />
         ) : null}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Capacitor } from "@capacitor/core";
 import { NativeAudio } from "@capacitor-community/native-audio";
@@ -31,8 +31,6 @@ export function useComboCallouts(
   comboRepetitions: number,
   repeatPauseSeconds: number,
 ): void {
-  const completeListenerRef = useRef<PluginListenerHandle | null>(null);
-
   const reps = clampRepetitions(comboRepetitions);
   const pauseMs = clampPauseSeconds(repeatPauseSeconds) * 1000;
   const calloutIdsKey = calloutIds?.join("|") ?? "";
@@ -44,15 +42,37 @@ export function useComboCallouts(
     if (!ids.length) return;
 
     let cancelled = false;
-    const pendingResolvers = new Map<string, () => void>();
-    const loadedIds = new Set<string>();
-
-    const clearPending = (assetId: string) => {
-      const resolve = pendingResolvers.get(assetId);
-      if (resolve) {
-        resolve();
-        pendingResolvers.delete(assetId);
+    let playInstanceCounter = 0;
+    const pendingByInstance = new Map<
+      string,
+      {
+        assetId: string;
+        resolve: () => void;
+        timeoutId: ReturnType<typeof setTimeout> | null;
       }
+    >();
+    const latestInstanceByAsset = new Map<string, string>();
+    const loadedIds = new Set<string>();
+    let completeListener: PluginListenerHandle | null = null;
+
+    const clearPendingByInstance = (playInstanceId: string) => {
+      const pending = pendingByInstance.get(playInstanceId);
+      if (!pending) return;
+      if (pending.timeoutId) {
+        clearTimeout(pending.timeoutId);
+      }
+      const activeForAsset = latestInstanceByAsset.get(pending.assetId);
+      if (activeForAsset === playInstanceId) {
+        latestInstanceByAsset.delete(pending.assetId);
+      }
+      pendingByInstance.delete(playInstanceId);
+      pending.resolve();
+    };
+
+    const clearPendingForAsset = (assetId: string) => {
+      const playInstanceId = latestInstanceByAsset.get(assetId);
+      if (!playInstanceId) return;
+      clearPendingByInstance(playInstanceId);
     };
 
     const preloadIds = async () => {
@@ -86,12 +106,16 @@ export function useComboCallouts(
     };
 
     const ensureListener = async () => {
-      completeListenerRef.current = await NativeAudio.addListener(
+      completeListener = await NativeAudio.addListener(
         "complete",
         ({ assetId }) => {
-          clearPending(assetId);
+          clearPendingForAsset(assetId);
         },
       );
+      if (cancelled) {
+        await completeListener.remove();
+        completeListener = null;
+      }
     };
 
     const playSingle = async (id: string) => {
@@ -103,18 +127,33 @@ export function useComboCallouts(
       }
 
       await new Promise<void>((resolve) => {
-        pendingResolvers.set(id, resolve);
+        clearPendingForAsset(id);
+        const playInstanceId = `${id}-${++playInstanceCounter}`;
+        pendingByInstance.set(playInstanceId, {
+          assetId: id,
+          resolve,
+          timeoutId: null,
+        });
+        latestInstanceByAsset.set(id, playInstanceId);
         void NativeAudio.play({ assetId: id })
           .then(async () => {
+            if (!pendingByInstance.has(playInstanceId)) return;
             // Fallback in case complete event does not fire on a device build.
             const { duration } = await NativeAudio.getDuration({ assetId: id });
             const durationMs = Math.max(250, Math.ceil(duration * 1000) + 250);
-            await waitMs(durationMs);
-            clearPending(id);
+            const timeoutId = setTimeout(() => {
+              clearPendingByInstance(playInstanceId);
+            }, durationMs);
+            const pending = pendingByInstance.get(playInstanceId);
+            if (!pending) {
+              clearTimeout(timeoutId);
+              return;
+            }
+            pending.timeoutId = timeoutId;
           })
           .catch((err) => {
             console.warn(`Callout clip failed to play: ${id}`, err);
-            clearPending(id);
+            clearPendingByInstance(playInstanceId);
           });
       });
     };
@@ -147,14 +186,16 @@ export function useComboCallouts(
 
     return () => {
       cancelled = true;
-      for (const resolve of pendingResolvers.values()) resolve();
-      pendingResolvers.clear();
+      for (const playInstanceId of pendingByInstance.keys()) {
+        clearPendingByInstance(playInstanceId);
+      }
+      latestInstanceByAsset.clear();
       for (const id of loadedIds) {
         void NativeAudio.stop({ assetId: id }).catch(() => {});
         void NativeAudio.unload({ assetId: id }).catch(() => {});
       }
-      void completeListenerRef.current?.remove();
-      completeListenerRef.current = null;
+      void completeListener?.remove();
+      completeListener = null;
     };
   }, [calloutIdsKey, enabled, volume, reps, pauseMs]);
 }
