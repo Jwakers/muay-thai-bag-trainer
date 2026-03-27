@@ -91,6 +91,10 @@ export function useComboCallouts(
               assetPath,
               volume,
             });
+            if (cancelled) {
+              void NativeAudio.unload({ assetId: id }).catch(() => {});
+              break;
+            }
             preloaded = true;
             break;
           } catch {

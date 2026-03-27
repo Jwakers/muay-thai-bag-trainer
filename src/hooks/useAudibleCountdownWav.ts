@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { NativeAudio } from "@capacitor-community/native-audio";
 import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
@@ -13,6 +13,9 @@ export function useAudibleCountdownWav(
   volume: number,
 ): void {
   const [loadedIds, setLoadedIds] = useState<Set<string>>(() => new Set());
+  const lastPlayedSecondRef = useRef<number | null>(null);
+  const currentAssetId = `countdown-${secondsLeft}`;
+  const isCurrentAssetLoaded = loadedIds.has(currentAssetId);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -36,6 +39,10 @@ export function useAudibleCountdownWav(
         for (const assetPath of candidatePaths) {
           try {
             await NativeAudio.preload({ assetId: id, assetPath, volume });
+            if (cancelled) {
+              void NativeAudio.unload({ assetId: id }).catch(() => {});
+              break;
+            }
             loadedInRun.add(id);
             setLoadedIds((prev) => {
               if (prev.has(id)) return prev;
@@ -74,9 +81,16 @@ export function useAudibleCountdownWav(
     const cap = Math.min(lastSeconds, COUNTDOWN_MAX_SECONDS);
     if (secondsLeft < 1 || secondsLeft > cap) return;
 
-    const assetId = `countdown-${secondsLeft}`;
-    if (!loadedIds.has(assetId)) return;
-    void NativeAudio.setVolume({ assetId, volume }).catch(() => {});
-    void NativeAudio.play({ assetId }).catch(() => {});
-  }, [secondsLeft, lastSeconds, volume, loadedIds]);
+    if (!isCurrentAssetLoaded) return;
+    if (lastPlayedSecondRef.current === secondsLeft) return;
+    lastPlayedSecondRef.current = secondsLeft;
+    void NativeAudio.setVolume({ assetId: currentAssetId, volume }).catch(() => {});
+    void NativeAudio.play({ assetId: currentAssetId }).catch(() => {});
+  }, [secondsLeft, lastSeconds, volume, currentAssetId, isCurrentAssetLoaded]);
+
+  useEffect(() => {
+    if (secondsLeft < 1) {
+      lastPlayedSecondRef.current = null;
+    }
+  }, [secondsLeft]);
 }
