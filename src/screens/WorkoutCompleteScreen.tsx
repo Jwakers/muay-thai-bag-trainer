@@ -7,6 +7,7 @@ export interface WorkoutCompleteScreenProps {
   onNavigate: (screen: ScreenId) => void;
   settings: AppSettings;
   currentRound: number;
+  canAddRound: boolean;
   onAddRound: () => void;
 }
 
@@ -20,6 +21,7 @@ export function WorkoutCompleteScreen({
   onNavigate,
   settings,
   currentRound,
+  canAddRound,
   onAddRound,
 }: WorkoutCompleteScreenProps) {
   useScreenWakeLock();
@@ -57,13 +59,15 @@ export function WorkoutCompleteScreen({
       <div className="flex flex-col gap-standard mt-auto">
         <Button
           variant="secondary"
+          disabled={!canAddRound}
           className="!text-brand-primary !border-brand-primary/30 hover:!bg-brand-primary/10 hover:!border-brand-primary/80 hover:shadow-[0_0_15px_rgba(255,143,115,0.15)] transform hover:-translate-y-0.5 transition-all duration-300"
           onClick={() => {
+            if (!canAddRound) return;
             void resumeSharedAudioContext();
             onAddRound();
           }}
         >
-          Add 1 More Round
+          {canAddRound ? "Add 1 More Round" : "Max Rounds Reached"}
         </Button>
         <Button variant="primary" onClick={() => onNavigate("home")}>
           Save & Finish

@@ -17,6 +17,7 @@ function isIosDevice(): boolean {
 }
 
 export interface PwaInstallState {
+  isNativePlatform: boolean;
   deferredPrompt: BeforeInstallPromptEvent | null;
   isStandalone: boolean;
   isIos: boolean;
@@ -79,6 +80,7 @@ export function usePwaInstall(): PwaInstallState {
   }, [isNativePlatform]);
 
   return {
+    isNativePlatform,
     deferredPrompt,
     isStandalone,
     isIos: isIosDevice(),

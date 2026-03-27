@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { InputField } from "../components/InputField";
+import { PwaInstallBanner } from "../components/PwaInstallBanner";
 import { COUNTDOWN_MAX_SECONDS } from "../data/countdownAudio";
+import { getMaxRoundsForDifficulty } from "../data/workoutData";
+import type { PwaInstallState } from "../hooks/usePwaInstall";
 import type { AppSettings, ScreenId } from "../types";
 
 function formatTime(totalSeconds: number): string {
@@ -34,12 +37,14 @@ export interface SettingsScreenProps {
   onNavigate: (screen: ScreenId) => void;
   settings: AppSettings;
   onSaveSettings: (next: AppSettings) => void;
+  pwaInstall: PwaInstallState;
 }
 
 export function SettingsScreen({
   onNavigate,
   settings,
   onSaveSettings,
+  pwaInstall,
 }: SettingsScreenProps) {
   const [localSettings, setLocalSettings] = useState<LocalSettingsForm>({
     roundDuration: formatTime(settings.roundDuration),
@@ -55,7 +60,10 @@ export function SettingsScreen({
     calloutRepeatPauseSeconds: settings.calloutRepeatPauseSeconds.toString(),
   });
 
-  const voiceControlsDisabled = !localSettings.calloutsEnabled;
+  const nativeCalloutsAvailable = pwaInstall.isNativePlatform;
+  const maxRounds = getMaxRoundsForDifficulty(settings.difficulty);
+  const voiceControlsDisabled =
+    !nativeCalloutsAvailable || !localSettings.calloutsEnabled;
   const volumeSliderDisabled =
     !localSettings.calloutsEnabled &&
     localSettings.audibleCountdownLastSeconds === "0";
@@ -71,7 +79,7 @@ export function SettingsScreen({
       roundDuration: parseTime(localSettings.roundDuration),
       restDuration: parseTime(localSettings.restDuration),
       totalRounds: Number.isFinite(totalRounds)
-        ? totalRounds
+        ? Math.max(1, Math.min(maxRounds, Math.floor(totalRounds)))
         : settings.totalRounds,
       preWorkoutCountdownSeconds: Number.isFinite(preWorkout)
         ? Math.max(0, Math.min(120, preWorkout))
@@ -80,7 +88,9 @@ export function SettingsScreen({
         ? Math.max(0, Math.min(COUNTDOWN_MAX_SECONDS, audibleLast))
         : settings.audibleCountdownLastSeconds,
       tenSecondWarning: localSettings.tenSecondWarning,
-      calloutsEnabled: localSettings.calloutsEnabled,
+      calloutsEnabled: nativeCalloutsAvailable
+        ? localSettings.calloutsEnabled
+        : false,
       calloutsVolume: Math.min(
         1,
         Math.max(0, localSettings.calloutsVolumePercent / 100),
@@ -104,6 +114,21 @@ export function SettingsScreen({
           App Settings
         </h2>
       </div>
+      {!nativeCalloutsAvailable ? (
+        <>
+          <div
+            className="mb-6 rounded-lg border border-brand-outline-variant/40 bg-brand-surface-container-low px-4 py-3"
+            role="status"
+            aria-label="Install app for native callout features"
+          >
+            <p className="font-body text-sm text-brand-on-surface/90">
+              Install this app through your app store to unlock native workout
+              callouts and advanced callout controls.
+            </p>
+          </div>
+          <PwaInstallBanner pwa={pwaInstall} />
+        </>
+      ) : null}
 
       <div className="flex flex-col flex-1">
         <div className="bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-primary">
@@ -131,7 +156,14 @@ export function SettingsScreen({
             }
           />
           <InputField
-            label="Total Rounds"
+            label={
+              <>
+                <span className="block">Total Rounds</span>
+                <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
+                  Max {maxRounds} for {settings.difficulty} difficulty.
+                </span>
+              </>
+            }
             value={localSettings.totalRounds}
             onChange={(e) =>
               setLocalSettings({
@@ -208,24 +240,42 @@ export function SettingsScreen({
           </label>
         </div>
 
-        <div className="bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-tertiary">
+        <div
+          className={`bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-tertiary ${
+            nativeCalloutsAvailable ? "" : "opacity-55"
+          }`}
+        >
           <h3 className="font-display text-lg md:text-2xl uppercase mb-standard text-brand-tertiary tracking-tight">
             Callouts
           </h3>
-          <label className="flex items-center justify-between py-2 cursor-pointer mb-4">
+          {!nativeCalloutsAvailable ? (
+            <p className="font-body text-xs normal-case text-brand-outline leading-snug mb-3">
+              Workout callouts are app-only in this version.
+            </p>
+          ) : null}
+          <label
+            className={`flex items-center justify-between py-2 mb-4 ${
+              nativeCalloutsAvailable ? "cursor-pointer" : "cursor-not-allowed"
+            }`}
+          >
             <span className="font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface">
               Voice callouts
             </span>
             <input
               type="checkbox"
               checked={localSettings.calloutsEnabled}
+              disabled={!nativeCalloutsAvailable}
               onChange={(e) =>
                 setLocalSettings({
                   ...localSettings,
                   calloutsEnabled: e.target.checked,
                 })
               }
-              className="w-5 h-5 accent-brand-tertiary cursor-pointer"
+              className={`w-5 h-5 accent-brand-tertiary ${
+                nativeCalloutsAvailable
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed"
+              }`}
             />
           </label>
           <div className={volumeSliderDisabled ? "opacity-40" : ""}>
