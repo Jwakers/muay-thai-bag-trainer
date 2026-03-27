@@ -63,27 +63,23 @@ export function useComboCallouts(
           `public/audio/${id}.wav`,
           `${id}.wav`,
         ];
-        try {
-          let preloaded = false;
-          for (const assetPath of candidatePaths) {
-            try {
-              await NativeAudio.preload({
-                assetId: id,
-                assetPath,
-                volume,
-              });
-              preloaded = true;
-              break;
-            } catch {
-              // Try the next bundle-relative path candidate.
-            }
+        let preloaded = false;
+        for (const assetPath of candidatePaths) {
+          try {
+            await NativeAudio.preload({
+              assetId: id,
+              assetPath,
+              volume,
+            });
+            preloaded = true;
+            break;
+          } catch {
+            // Try the next bundle-relative path candidate.
           }
-          if (preloaded) {
-            loadedIds.add(id);
-          } else {
-            console.warn(`Callout clip failed to preload: ${id}`);
-          }
-        } catch {
+        }
+        if (preloaded) {
+          loadedIds.add(id);
+        } else {
           console.warn(`Callout clip failed to preload: ${id}`);
         }
       }
