@@ -60,13 +60,15 @@ export function SettingsScreen({
     calloutRepeatPauseSeconds: settings.calloutRepeatPauseSeconds.toString(),
   });
 
-  const nativeCalloutsAvailable = pwaInstall.isNativePlatform;
+  const nativeAudioAvailable = pwaInstall.isNativePlatform;
   const maxRounds = getMaxRoundsForDifficulty(settings.difficulty);
   const voiceControlsDisabled =
-    !nativeCalloutsAvailable || !localSettings.calloutsEnabled;
+    !nativeAudioAvailable || !localSettings.calloutsEnabled;
+  const countdownAudioDisabled = !nativeAudioAvailable;
   const volumeSliderDisabled =
-    !localSettings.calloutsEnabled &&
-    localSettings.audibleCountdownLastSeconds === "0";
+    !nativeAudioAvailable ||
+    (!localSettings.calloutsEnabled &&
+      localSettings.audibleCountdownLastSeconds === "0");
 
   const handleCommit = () => {
     const totalRounds = parseInt(localSettings.totalRounds, 10);
@@ -84,11 +86,13 @@ export function SettingsScreen({
       preWorkoutCountdownSeconds: Number.isFinite(preWorkout)
         ? Math.max(0, Math.min(120, preWorkout))
         : settings.preWorkoutCountdownSeconds,
-      audibleCountdownLastSeconds: Number.isFinite(audibleLast)
-        ? Math.max(0, Math.min(COUNTDOWN_MAX_SECONDS, audibleLast))
-        : settings.audibleCountdownLastSeconds,
+      audibleCountdownLastSeconds: nativeAudioAvailable
+        ? Number.isFinite(audibleLast)
+          ? Math.max(0, Math.min(COUNTDOWN_MAX_SECONDS, audibleLast))
+          : settings.audibleCountdownLastSeconds
+        : 0,
       tenSecondWarning: localSettings.tenSecondWarning,
-      calloutsEnabled: nativeCalloutsAvailable
+      calloutsEnabled: nativeAudioAvailable
         ? localSettings.calloutsEnabled
         : false,
       calloutsVolume: Math.min(
@@ -114,7 +118,7 @@ export function SettingsScreen({
           App Settings
         </h2>
       </div>
-      {!nativeCalloutsAvailable ? (
+      {!nativeAudioAvailable ? (
         <>
           <div
             className="mb-6 rounded-lg border border-brand-outline-variant/40 bg-brand-surface-container-low px-4 py-3"
@@ -123,7 +127,7 @@ export function SettingsScreen({
           >
             <p className="font-body text-sm text-brand-on-surface/90">
               Install this app through your app store to unlock native workout
-              callouts and advanced callout controls.
+              callouts, countdown audio, and advanced audio controls.
             </p>
           </div>
           <PwaInstallBanner pwa={pwaInstall} />
@@ -199,12 +203,14 @@ export function SettingsScreen({
           </h3>
           <InputField
             id="audible-countdown-last-seconds"
+            disabled={countdownAudioDisabled}
             label={
               <>
                 <span className="block">Countdown audio (last N seconds)</span>
                 <span className="block normal-case mt-1 text-xs font-body tracking-normal text-brand-outline">
-                  Plays before prep ends, rest ends, and each round ends. 0 =
-                  off, max {COUNTDOWN_MAX_SECONDS}. Uses callout volume.
+                  {countdownAudioDisabled
+                    ? "App-only. Install to enable native countdown audio."
+                    : `Plays before prep ends, rest ends, and each round ends. 0 = off, max ${COUNTDOWN_MAX_SECONDS}. Uses callout volume.`}
                 </span>
               </>
             }
@@ -242,20 +248,20 @@ export function SettingsScreen({
 
         <div
           className={`bg-brand-surface-container-low p-standard mb-8 border-l-8 border-l-brand-tertiary ${
-            nativeCalloutsAvailable ? "" : "opacity-55"
+            nativeAudioAvailable ? "" : "opacity-55"
           }`}
         >
           <h3 className="font-display text-lg md:text-2xl uppercase mb-standard text-brand-tertiary tracking-tight">
             Callouts
           </h3>
-          {!nativeCalloutsAvailable ? (
+          {!nativeAudioAvailable ? (
             <p className="font-body text-xs normal-case text-brand-outline leading-snug mb-3">
-              Workout callouts are app-only in this version.
+              Workout callouts and countdown audio are app-only in this version.
             </p>
           ) : null}
           <label
             className={`flex items-center justify-between py-2 mb-4 ${
-              nativeCalloutsAvailable ? "cursor-pointer" : "cursor-not-allowed"
+              nativeAudioAvailable ? "cursor-pointer" : "cursor-not-allowed"
             }`}
           >
             <span className="font-label uppercase text-sm font-bold tracking-widest text-brand-on-surface">
@@ -264,7 +270,7 @@ export function SettingsScreen({
             <input
               type="checkbox"
               checked={localSettings.calloutsEnabled}
-              disabled={!nativeCalloutsAvailable}
+              disabled={!nativeAudioAvailable}
               onChange={(e) =>
                 setLocalSettings({
                   ...localSettings,
@@ -272,7 +278,7 @@ export function SettingsScreen({
                 })
               }
               className={`w-5 h-5 accent-brand-tertiary ${
-                nativeCalloutsAvailable
+                nativeAudioAvailable
                   ? "cursor-pointer"
                   : "cursor-not-allowed"
               }`}
